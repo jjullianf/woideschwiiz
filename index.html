@@ -282,36 +282,39 @@ nav {
 /* ── FIRST-CLICK WARNING OVERLAY ── */
 #first-click-warning {
   position: absolute; inset: 0;
-  background: rgba(0,0,0,0.55);
-  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.25);
+  display: flex; align-items: flex-end; justify-content: center;
   border-radius: var(--radius-lg);
   z-index: 5;
   cursor: pointer;
+  padding-bottom: 1rem;
 }
 .fcw-box {
-  background: #fff; border-radius: 12px;
-  padding: 1.25rem 1.5rem; text-align: center;
-  max-width: 260px; margin: 0 1rem;
+  background: rgba(255,255,255,0.96); border-radius: 10px;
+  padding: 0.75rem 1rem; text-align: center;
+  max-width: 320px; width: calc(100% - 2rem);
   pointer-events: none;
+  display: flex; align-items: center; gap: 10px;
+  flex-wrap: wrap; justify-content: center;
 }
 @media (prefers-color-scheme: dark) {
-  .fcw-box { background: #1e1d1b; }
+  .fcw-box { background: rgba(30,29,27,0.96); }
 }
-.fcw-icon { font-size: 28px; margin-bottom: 8px; }
-.fcw-title { font-size: 15px; font-weight: 700; margin-bottom: 5px; color: var(--text); }
-.fcw-text { font-size: 13px; color: var(--text2); line-height: 1.4; margin-bottom: 10px; }
+.fcw-icon { display: none; }
+.fcw-title { font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; }
+.fcw-text { font-size: 12px; color: var(--text2); line-height: 1.3; margin: 0; }
 .fcw-btn {
-  display: inline-block; background: var(--red); color: #fff;
-  font-size: 13px; font-weight: 600; font-family: inherit;
-  border: none; border-radius: 7px; padding: 8px 18px; cursor: pointer;
-  pointer-events: auto; width: 100%;
+  background: var(--red); color: #fff;
+  font-size: 12px; font-weight: 600; font-family: inherit;
+  border: none; border-radius: 6px; padding: 6px 14px; cursor: pointer;
+  pointer-events: auto; white-space: nowrap; flex-shrink: 0;
 }
 .fcw-check-row {
-  display: flex; align-items: center; justify-content: center; gap: 7px;
-  font-size: 12px; color: var(--text2); margin-bottom: 10px;
-  cursor: pointer; pointer-events: auto;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  font-size: 11px; color: var(--text2);
+  cursor: pointer; pointer-events: auto; width: 100%;
 }
-.fcw-check-row input { cursor: pointer; width: 15px; height: 15px; }
+.fcw-check-row input { cursor: pointer; width: 13px; height: 13px; }
 
 /* ── STATS GRID ── */
 .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
@@ -423,13 +426,11 @@ nav {
     <div id="map-wrap">
       <div id="first-click-warning">
         <div class="fcw-box">
-          <div class="fcw-icon">⚠️</div>
-          <div class="fcw-title">Achtung!</div>
-          <div class="fcw-text">Der erste Klick auf die Karte wird als deine Antwort gezählt.</div>
+          <div class="fcw-title">Erster Klick zählt als Antwort</div>
+          <button class="fcw-btn" id="fcw-ok">Los!</button>
           <label class="fcw-check-row">
             <input type="checkbox" id="fcw-no-more"> Nicht mehr anzeigen
           </label>
-          <button class="fcw-btn" id="fcw-ok">Verstanden, los!</button>
         </div>
       </div>
       <svg id="map-svg" viewBox="0 0 800 520" xmlns="http://www.w3.org/2000/svg">
@@ -3871,6 +3872,9 @@ document.getElementById('fcw-ok').addEventListener('click', function(e) {
     try { localStorage.setItem(FCW_KEY, '1'); } catch(e) {}
   }
   dismissWarning();
+});
+document.getElementById('first-click-warning').addEventListener('click', function(e) {
+  if (e.target === this) { dismissWarning(); }
 });
 
 // ── MAP CLICK + TOUCH ─────────────────────────────────────────
