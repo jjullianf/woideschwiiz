@@ -266,6 +266,16 @@ nav {
 .daily-start-prompt {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
 }
+#start-overlay {
+  display: none;
+  position: absolute; inset: 0;
+  z-index: 4;
+  align-items: center; justify-content: center;
+  flex-direction: column; gap: 10px;
+  border-radius: var(--radius-lg);
+  background: rgba(255,255,255,0.18);
+  backdrop-filter: blur(1px);
+}
 .daily-start-center {
   display: flex; flex-direction: column; align-items: center;
   padding: 2rem 0 0.5rem;
@@ -346,9 +356,8 @@ nav {
         <div class="stat-lbl">Tage in Folge</div>
       </div>
     </div>
-    <div class="daily-start-center">
-      <button class="daily-start-big" onclick="startGame('daily')">Spielen</button>
-      <div class="daily-start-sub">Der erste Klick zählt</div>
+    <div class="daily-start-prompt">
+      <div class="daily-info">5 Runden · keine Hilfen · <strong>täglich neu</strong></div>
     </div>
   </div>
 
@@ -396,6 +405,10 @@ nav {
     </div>
 
     <div id="map-wrap">
+      <div id="start-overlay">
+        <button class="daily-start-big" id="start-overlay-btn">Spielen</button>
+        <div class="daily-start-sub">Der erste Klick zählt</div>
+      </div>
       <svg id="map-svg" viewBox="0 0 800 520" xmlns="http://www.w3.org/2000/svg">
         <rect width="800" height="520" fill="#ffffff"/>
         <g id="g-country"></g>
@@ -3653,6 +3666,9 @@ function show(id)  { document.getElementById(id).style.display = 'block'; }
 function hide(id)  { document.getElementById(id).style.display = 'none'; }
 
 function startGame(m) {
+  // Always hide start overlay when starting any game
+  const ov = document.getElementById('start-overlay');
+  if (ov) ov.style.display = 'none';
   mode = m;
   if (m === 'daily') {
     const saved = localStorage.getItem(DAILY_KEY);
@@ -3800,12 +3816,43 @@ function showFinal() {
 // ── BUTTON LISTENERS ──────────────────────────────────────────
 updateStatsDisplay();
 document.getElementById('daily-date').textContent = new Date().toLocaleDateString('de-CH', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
-// Auto-start: show daily header, or show already-played
+// Auto-start: show map with start overlay, or show already-played
 (function() {
   const saved = localStorage.getItem(DAILY_KEY);
   if (saved) { showAlreadyPlayed(JSON.parse(saved)); }
-  else { show('daily-header'); updateStatsDisplay(); document.getElementById('nav-daily-btn').className = 'nav-btn active'; }
+  else { showDailyReady(); }
 })();
+
+function showDailyReady() {
+  mode = 'daily';
+  places = getDailyPlaces();
+  roundIdx = 0; scores = []; dists = [];
+  hide('already-played'); hide('final-screen'); hide('daily-header');
+  show('game-screen');
+  document.getElementById('game-title').textContent = 'Tages Challenge';
+  document.getElementById('nav-daily-btn').className = 'nav-btn active';
+  document.getElementById('nav-free-btn').className = 'nav-btn';
+  document.getElementById('helpers').style.display = 'none';
+  // Draw the map so it's visible behind the overlay
+  document.getElementById('g-overlays').innerHTML = '';
+  document.getElementById('g-canton-fills').innerHTML = '';
+  drawCountry();
+  // Show start overlay
+  const ov = document.getElementById('start-overlay');
+  if (ov) ov.style.display = 'flex';
+  // Hide round pips / result
+  document.getElementById('round-result').style.display = 'none';
+  for (let i = 0; i < 5; i++) document.getElementById('d' + i).className = 'rpip';
+  updateStatsDisplay();
+}
+
+document.getElementById('start-overlay-btn').addEventListener('click', function() {
+  const ov = document.getElementById('start-overlay');
+  if (ov) ov.style.display = 'none';
+  showCantons = false; showCities = false; showKt = false; showLakes = false;
+  updateHelperBtns(); renderHelpers();
+  startRound();
+});
 
 
 // Nav buttons
@@ -3813,7 +3860,7 @@ document.getElementById('nav-daily-btn').addEventListener('click', () => {
   hide('game-screen'); hide('final-screen'); hide('already-played');
   const saved = localStorage.getItem(DAILY_KEY);
   if (saved) { showAlreadyPlayed(JSON.parse(saved)); }
-  else { startGame('daily'); }
+  else { showDailyReady(); }
 });
 document.getElementById('nav-free-btn').addEventListener('click', () => startGame('unlimited'));
 
