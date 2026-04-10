@@ -3726,15 +3726,6 @@ function showAlreadyPlayed(data) {
 function startRound() {
   guessed = false;
   warningDismissed = false;
-  // Draw map immediately so it's visible behind the warning
-  drawCountry();
-  document.getElementById('g-overlays').innerHTML = '';
-  document.getElementById('g-canton-fills').innerHTML = '';
-  const w = document.getElementById('first-click-warning');
-  // Show warning only on round 1 and if user hasn't permanently dismissed it
-  const noWarning = (() => { try { return localStorage.getItem(FCW_KEY) === '1'; } catch(e) { return false; } })();
-  if (w) w.style.display = (roundIdx === 0 && !noWarning) ? 'flex' : 'none';
-  if (roundIdx !== 0 || noWarning) warningDismissed = true;
   const p = places[roundIdx];
   currentKt = p.kt;
   document.getElementById('rnum').textContent = roundIdx + 1;
@@ -3743,11 +3734,20 @@ function startRound() {
   document.getElementById('round-result').style.display = 'none';
   document.getElementById('map-instr').textContent = 'Klick so genau wie möglich auf den gesuchten Ort';
   document.getElementById('map-wrap').style.cursor = 'crosshair';
+  document.getElementById('g-overlays').innerHTML = '';
+  document.getElementById('g-canton-fills').innerHTML = '';
+  // Draw map so it's visible behind the warning overlay
+  drawCountry();
+  if (showKt) drawCantonFill(currentKt);
   for (let i = 0; i < 5; i++) {
     const d = document.getElementById('d' + i);
     d.className = 'rpip' + (i < roundIdx ? ' ' + dotCls(scores[i]) : i === roundIdx ? ' active' : '');
   }
-  if (showKt) drawCantonFill(currentKt);
+  // Show warning only on round 1 and if not permanently dismissed
+  const noWarning = (() => { try { return localStorage.getItem(FCW_KEY) === '1'; } catch(e) { return false; } })();
+  const w = document.getElementById('first-click-warning');
+  if (w) w.style.display = (roundIdx === 0 && !noWarning) ? 'flex' : 'none';
+  if (roundIdx !== 0 || noWarning) warningDismissed = true;
 }
 
 // ── HELPERS ───────────────────────────────────────────────────
