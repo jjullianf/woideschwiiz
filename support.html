@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Über das Spiel & Support – Wo i de Schwiiz?</title>
+<meta name="description" content="Alles über Wo i de Schwiiz? – Das kostenlose Schweizer Geografie-Quiz. Wie funktioniert das Spiel? Wie kannst du helfen? Hier findest du alle Antworten.">
+<meta name="keywords" content="wo i de schwiiz support, schweiz geografie quiz hilfe, schweizer gemeinden spiel erklärung, geografie spiel schweiz, woideschwiiz">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://woideschwiiz.ch/support.html">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --red: #cc0018; --red2: #a80014;
+  --bg: #ffffff; --bg2: #f9f7f5;
+  --text: #18181a; --text2: #72706c; --text3: #a8a5a0;
+  --border: rgba(0,0,0,0.08);
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #141414; --bg2: #1e1d1b; --text: #f0ece6; --text2: #8a8680; --text3: #58554f; --border: rgba(255,255,255,0.08); }
+}
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh; line-height: 1.6;
+}
+nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 1.25rem; height: 52px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg); position: sticky; top: 0; z-index: 10;
+}
+.nav-logo { font-size: 17px; font-weight: 700; color: var(--red); text-decoration: none; }
+.nav-logo span { color: var(--text); font-weight: 400; font-size: 14px; margin-left: 5px; }
+.nav-home {
+  font-size: 13px; font-weight: 500; color: var(--text2);
+  text-decoration: none; padding: 6px 12px; border-radius: 8px;
+  border: 1px solid var(--border); transition: background 0.15s;
+}
+.nav-home:hover { background: var(--bg2); }
+main { max-width: 640px; margin: 0 auto; padding: 2.5rem 1.25rem 6rem; }
+h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 0.5rem; }
+.subtitle { font-size: 15px; color: var(--text2); margin-bottom: 2.5rem; }
+h2 { font-size: 18px; font-weight: 700; margin: 2rem 0 0.6rem; }
+p { font-size: 15px; color: var(--text2); margin-bottom: 0.9rem; }
+.highlight { color: var(--text); }
+.divider { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+/* BMC section */
+.bmc-section {
+  background: var(--bg2); border-radius: 14px;
+  padding: 1.75rem; text-align: center; margin: 2.5rem 0;
+  border: 1px solid var(--border);
+}
+.bmc-section h2 { margin-top: 0; font-size: 20px; }
+.bmc-section p { margin-bottom: 1.25rem; }
+.bmc-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--red); color: #fff; text-decoration: none;
+  font-size: 15px; font-weight: 700; font-family: inherit;
+  padding: 0 24px; height: 48px; border-radius: 24px;
+  box-shadow: 0 2px 12px rgba(204,0,24,0.25);
+  transition: background 0.15s, transform 0.1s;
+}
+.bmc-btn:hover { background: var(--red2); transform: translateY(-1px); }
+/* FAQ */
+.faq-item { border-bottom: 1px solid var(--border); padding: 0.9rem 0; }
+.faq-q { font-size: 15px; font-weight: 600; margin-bottom: 0.3rem; color: var(--text); }
+.faq-a { font-size: 14px; color: var(--text2); }
+/* Score table */
+.score-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 14px; }
+.score-table th { text-align: left; font-weight: 600; padding: 6px 0; border-bottom: 2px solid var(--border); color: var(--text); }
+.score-table td { padding: 6px 0; color: var(--text2); border-bottom: 1px solid var(--border); }
+.score-table td:last-child { color: var(--red); font-weight: 600; }
+/* Floating BMC */
+#bmc-float {
+  position: fixed; bottom: 1.25rem; right: 1.25rem;
+  background: var(--red); color: #fff; text-decoration: none;
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  padding: 0 16px; height: 42px; border-radius: 21px;
+  display: inline-flex; align-items: center; gap: 6px;
+  box-shadow: 0 2px 12px rgba(204,0,24,0.3); z-index: 100;
+  transition: background 0.15s, transform 0.1s;
+}
+#bmc-float:hover { background: var(--red2); transform: translateY(-1px); }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">Wo i de Schwiiz?<span>🇨🇭</span></a>
+  <a class="nav-home" href="/">← Spielen</a>
+</nav>
+
+<main>
+
+  <h1>Über das Spiel</h1>
+  <p class="subtitle">Alles was du über <strong class="highlight">Wo i de Schwiiz?</strong> wissen möchtest.</p>
+
+  <div class="bmc-section">
+    <h2>☕ Das Spiel gefällt dir?</h2>
+    <p>
+      <strong class="highlight">Wo i de Schwiiz?</strong> ist komplett kostenlos und werbefrei. Wenn dir das Spiel
+      Freude bereitet und du die Weiterentwicklung unterstützen möchtest, freue ich mich riesig über einen Kaffee!
+      Das hilft dabei, das Spiel am Leben zu erhalten und neue Features wie ein Leaderboard oder Schulklassen-Modus
+      umzusetzen.
+    </p>
+    <a class="bmc-btn" href="https://buymeacoffee.com/julianf?new=1" target="_blank" rel="noopener">
+      ☕ Kaffee spendieren
+    </a>
+  </div>
+
+  <hr class="divider">
+
+  <h2>Was ist Wo i de Schwiiz?</h2>
+  <p>
+    <strong class="highlight">Wo i de Schwiiz?</strong> ist ein kostenloses Schweizer Geografie-Quiz, bei dem du täglich
+    5 Ortschaften auf der Karte einpinnen musst. Je näher dein Klick am echten Ort liegt, desto mehr Punkte bekommst du —
+    bis zu <strong class="highlight">5'000 Punkte</strong> pro Runde, also maximal <strong class="highlight">25'000 Punkte</strong> insgesamt.
+  </p>
+  <p>
+    Die Ortsdatenbank enthält <strong class="highlight">3'031 Ortschaften</strong> aus dem amtlichen swisstopo-Ortschaftenverzeichnis —
+    von grossen Städten wie Zürich und Genf bis zu kleinen Weilern in den Alpen.
+  </p>
+
+  <hr class="divider">
+
+  <h2>Wie funktioniert das Spiel?</h2>
+
+  <div class="faq-item">
+    <div class="faq-q">Wie spiele ich?</div>
+    <div class="faq-a">Ein Ortsname erscheint. Klick auf der Schweizerkarte so genau wie möglich auf den gesuchten Ort. Der erste Klick zählt als deine Antwort — du kannst nicht korrigieren.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Wie werden Punkte berechnet?</div>
+    <div class="faq-a">Je näher dein Klick, desto mehr Punkte. Weniger als 1.5 km daneben gibt volle 5'000 Punkte. Ab 350 km Abstand gibt es 0 Punkte.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Was bedeuten die Schwierigkeitsstufen?</div>
+    <div class="faq-a">Einfach: grosse Städte (z. B. Bern, Basel). Mittel: bekannte Tourismusorte (z. B. Grindelwald, Zermatt). Schwer: kleine Dörfer und Weiler.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Was ist die Tages Challenge?</div>
+    <div class="faq-a">Jeden Tag gibt es eine neue Tages Challenge mit genau 5 Orten — täglich für alle gleich, ohne Hilfen. Du kannst sie nur einmal pro Tag spielen. Dein Streak zeigt wie viele Tage in Folge du gespielt hast.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Was ist der Unlimitiert-Modus?</div>
+    <div class="faq-a">Im Unlimitiert-Modus kannst du jederzeit und so oft spielen wie du möchtest. Hilfen wie Kantonsumrisse, Seen oder grosse Städte stehen zur Verfügung.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Was bedeutet «Streak»?</div>
+    <div class="faq-a">Dein Streak zeigt wie viele Tage in Folge du die Tages Challenge gespielt hast. Er wird täglich um Mitternacht zurückgesetzt wenn du nicht gespielt hast.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Kann ich das Ergebnis teilen?</div>
+    <div class="faq-a">Ja! Am Ende jedes Spiels kannst du dein Ergebnis kopieren oder direkt per WhatsApp teilen.</div>
+  </div>
+
+  <hr class="divider">
+
+  <h2>Punktetabelle</h2>
+  <table class="score-table">
+    <thead><tr><th>Abstand</th><th>Punkte</th></tr></thead>
+    <tbody>
+      <tr><td>Weniger als 1.5 km</td><td>5'000 ⭐ Perfekt!</td></tr>
+      <tr><td>Ca. 5 km</td><td>~4'600</td></tr>
+      <tr><td>Ca. 20 km</td><td>~3'500</td></tr>
+      <tr><td>Ca. 50 km</td><td>~2'100</td></tr>
+      <tr><td>Ca. 100 km</td><td>~900</td></tr>
+      <tr><td>350 km oder mehr</td><td>0</td></tr>
+    </tbody>
+  </table>
+
+  <hr class="divider">
+
+  <h2>Daten & Datenschutz</h2>
+  <p>
+    Die Ortsdaten stammen aus dem amtlichen <strong class="highlight">swisstopo-Ortschaftenverzeichnis</strong> (AMTOVZ) und werden
+    lokal im Browser verarbeitet. Es werden keine persönlichen Daten gespeichert — deine Spielstatistiken
+    (Streak, Bestpunktzahl) werden ausschliesslich lokal in deinem Browser gespeichert und nie an einen Server übertragen.
+  </p>
+  <p>
+    Das Spiel verwendet Google Analytics zur anonymen Nutzungsstatistik (wie viele Personen spielen täglich) sowie
+    die Google Search Console. Es werden keine Cookies für Werbung gesetzt.
+  </p>
+
+  <hr class="divider">
+
+  <h2>Kontakt & Feedback</h2>
+  <p>
+    Hast du einen Fehler gefunden, eine Idee für neue Features oder einfach Lust, Feedback zu geben?
+    Ich freue mich über jede Nachricht! Du kannst mich über
+    <a href="https://buymeacoffee.com/julianf?new=1" target="_blank" rel="noopener" style="color:var(--red);">Buy Me a Coffee</a> erreichen.
+  </p>
+
+  <!-- Hidden SEO paragraph -->
+  <div style="font-size:0;height:0;overflow:hidden;" aria-hidden="true">
+    Schweizer Geografie Quiz täglich spielen. Wo liegt welcher Ort in der Schweiz?
+    Schweizer Gemeinden und Ortschaften lernen. Geografie Test Schweiz für Schule und Freizeit.
+    Kantone Schweiz Quiz, Schweizer Karte Spiel, GeoGuessr Schweiz Alternative kostenlos.
+    Wo i de Schwiiz spielen, woideschwiiz.ch, schweiz quiz online, schweizer orte erraten,
+    geografie lernen schweiz, lernspiel gemeinden schweiz.
+  </div>
+
+</main>
+
+<a href="https://buymeacoffee.com/julianf?new=1" target="_blank" rel="noopener" id="bmc-float">
+  ☕ Kaffee spendieren
+</a>
+
+</body>
+</html>
