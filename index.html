@@ -279,43 +279,6 @@ nav {
 .daily-info { font-size: 13px; color: var(--text2); }
 .daily-info strong { color: var(--text); }
 
-/* ── FIRST-CLICK WARNING OVERLAY ── */
-#first-click-warning {
-  position: absolute; inset: 0;
-  background: rgba(0,0,0,0.25);
-  display: flex; align-items: flex-end; justify-content: center;
-  border-radius: var(--radius-lg);
-  z-index: 5;
-  cursor: pointer;
-  padding-bottom: 1rem;
-}
-.fcw-box {
-  background: rgba(255,255,255,0.96); border-radius: 10px;
-  padding: 0.75rem 1rem; text-align: center;
-  max-width: 320px; width: calc(100% - 2rem);
-  pointer-events: none;
-  display: flex; align-items: center; gap: 10px;
-  flex-wrap: wrap; justify-content: center;
-}
-@media (prefers-color-scheme: dark) {
-  .fcw-box { background: rgba(30,29,27,0.96); }
-}
-.fcw-icon { display: none; }
-.fcw-title { font-size: 13px; font-weight: 700; color: var(--text); white-space: nowrap; }
-.fcw-text { font-size: 12px; color: var(--text2); line-height: 1.3; margin: 0; }
-.fcw-btn {
-  background: var(--red); color: #fff;
-  font-size: 12px; font-weight: 600; font-family: inherit;
-  border: none; border-radius: 6px; padding: 6px 14px; cursor: pointer;
-  pointer-events: auto; white-space: nowrap; flex-shrink: 0;
-}
-.fcw-check-row {
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-  font-size: 11px; color: var(--text2);
-  cursor: pointer; pointer-events: auto; width: 100%;
-}
-.fcw-check-row input { cursor: pointer; width: 13px; height: 13px; }
-
 /* ── STATS GRID ── */
 .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
 .stat-box { background: var(--bg2); border-radius: var(--radius); padding: 10px; text-align: center; border: 1px solid var(--border); }
@@ -414,6 +377,7 @@ nav {
       <div class="challenge-label">Wo liegt dieser Ort?</div>
       <div id="place-name">—</div>
       <div id="place-meta"></div>
+      <div id="first-click-hint" style="font-size:11px;color:var(--text3);margin-top:4px;">Erster Klick auf die Karte zählt als Antwort</div>
     </div>
 
     <div id="helpers" style="display:none;">
@@ -424,15 +388,6 @@ nav {
     </div>
 
     <div id="map-wrap">
-      <div id="first-click-warning">
-        <div class="fcw-box">
-          <div class="fcw-title">Erster Klick zählt als Antwort</div>
-          <button class="fcw-btn" id="fcw-ok">Los!</button>
-          <label class="fcw-check-row">
-            <input type="checkbox" id="fcw-no-more"> Nicht mehr anzeigen
-          </label>
-        </div>
-      </div>
       <svg id="map-svg" viewBox="0 0 800 520" xmlns="http://www.w3.org/2000/svg">
         <rect width="800" height="520" fill="#ffffff"/>
         <g id="g-country"></g>
@@ -3725,29 +3680,25 @@ function showAlreadyPlayed(data) {
 
 function startRound() {
   guessed = false;
-  warningDismissed = false;
   const p = places[roundIdx];
   currentKt = p.kt;
   document.getElementById('rnum').textContent = roundIdx + 1;
   document.getElementById('place-name').textContent = showKt ? `${p.n} (${p.kt})` : p.n;
   document.getElementById('place-meta').textContent = '';
+  // Show hint only on round 1
+  const hint = document.getElementById('first-click-hint');
+  if (hint) hint.style.display = roundIdx === 0 ? 'block' : 'none';
   document.getElementById('round-result').style.display = 'none';
   document.getElementById('map-instr').textContent = 'Klick so genau wie möglich auf den gesuchten Ort';
   document.getElementById('map-wrap').style.cursor = 'crosshair';
   document.getElementById('g-overlays').innerHTML = '';
   document.getElementById('g-canton-fills').innerHTML = '';
-  // Draw map so it's visible behind the warning overlay
   drawCountry();
   if (showKt) drawCantonFill(currentKt);
   for (let i = 0; i < 5; i++) {
     const d = document.getElementById('d' + i);
     d.className = 'rpip' + (i < roundIdx ? ' ' + dotCls(scores[i]) : i === roundIdx ? ' active' : '');
   }
-  // Show warning only on round 1 and if not permanently dismissed
-  const noWarning = (() => { try { return localStorage.getItem(FCW_KEY) === '1'; } catch(e) { return false; } })();
-  const w = document.getElementById('first-click-warning');
-  if (w) w.style.display = (roundIdx === 0 && !noWarning) ? 'flex' : 'none';
-  if (roundIdx !== 0 || noWarning) warningDismissed = true;
 }
 
 // ── HELPERS ───────────────────────────────────────────────────
@@ -3858,30 +3809,9 @@ document.getElementById('nav-daily-btn').addEventListener('click', () => {
 });
 document.getElementById('nav-free-btn').addEventListener('click', () => startGame('unlimited'));
 
-// ── FIRST-CLICK WARNING ───────────────────────────────────────
-let warningDismissed = false;
-const FCW_KEY = 'woideschwiiz_no_warning';
-
-function dismissWarning() {
-  warningDismissed = true;
-  const w = document.getElementById('first-click-warning');
-  if (w) w.style.display = 'none';
-}
-document.getElementById('fcw-ok').addEventListener('click', function(e) {
-  e.stopPropagation();
-  if (document.getElementById('fcw-no-more').checked) {
-    try { localStorage.setItem(FCW_KEY, '1'); } catch(e) {}
-  }
-  dismissWarning();
-});
-document.getElementById('first-click-warning').addEventListener('click', function(e) {
-  if (e.target === this) { dismissWarning(); }
-});
-
 // ── MAP CLICK + TOUCH ─────────────────────────────────────────
 function handleMapInteraction(e) {
   if (guessed) return;
-  if (!warningDismissed) { dismissWarning(); return; }
   e.preventDefault();
   const svg = document.getElementById('map-svg');
   const rect = svg.getBoundingClientRect();
