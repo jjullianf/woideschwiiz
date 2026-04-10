@@ -266,18 +266,26 @@ nav {
 .daily-start-prompt {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
 }
-.daily-start-cta {
-  background: var(--red); color: #fff;
-  border: none; border-radius: var(--radius);
-  padding: 0 20px; height: var(--touch-min);
-  font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer;
-  white-space: nowrap;
-  -webkit-tap-highlight-color: transparent;
-  display: inline-flex; align-items: center; flex-shrink: 0;
+.daily-start-center {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 2rem 0 0.5rem;
+  gap: 10px;
 }
-.daily-start-cta:active { transform: scale(0.97); }
-.daily-info { font-size: 13px; color: var(--text2); }
-.daily-info strong { color: var(--text); }
+.daily-start-big {
+  background: var(--red); color: #fff;
+  border: none; border-radius: 12px;
+  padding: 0 2.5rem; height: 56px;
+  font-size: 18px; font-weight: 700; font-family: inherit;
+  cursor: pointer; letter-spacing: -0.2px;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.12s, transform 0.1s;
+  min-width: 180px;
+}
+.daily-start-big:hover { background: var(--red2); }
+.daily-start-big:active { transform: scale(0.97); }
+.daily-start-sub {
+  font-size: 12px; color: var(--text3);
+}
 
 /* ── STATS GRID ── */
 .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
@@ -338,9 +346,9 @@ nav {
         <div class="stat-lbl">Tage in Folge</div>
       </div>
     </div>
-    <div class="daily-start-prompt">
-      <div class="daily-info">5 Runden · keine Hilfen · <strong>täglich neu</strong></div>
-      <button class="daily-start-cta" onclick="startGame('daily')">Spielen →</button>
+    <div class="daily-start-center">
+      <button class="daily-start-big" onclick="startGame('daily')">Spielen</button>
+      <div class="daily-start-sub">Der erste Klick zählt</div>
     </div>
   </div>
 
@@ -3792,11 +3800,11 @@ function showFinal() {
 // ── BUTTON LISTENERS ──────────────────────────────────────────
 updateStatsDisplay();
 document.getElementById('daily-date').textContent = new Date().toLocaleDateString('de-CH', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
-// Auto-start: launch daily immediately, or show already-played
+// Auto-start: show daily header, or show already-played
 (function() {
   const saved = localStorage.getItem(DAILY_KEY);
   if (saved) { showAlreadyPlayed(JSON.parse(saved)); }
-  else { startGame('daily'); }
+  else { show('daily-header'); updateStatsDisplay(); document.getElementById('nav-daily-btn').className = 'nav-btn active'; }
 })();
 
 
