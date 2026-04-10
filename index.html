@@ -3726,6 +3726,10 @@ function showAlreadyPlayed(data) {
 function startRound() {
   guessed = false;
   warningDismissed = false;
+  // Draw map immediately so it's visible behind the warning
+  drawCountry();
+  document.getElementById('g-overlays').innerHTML = '';
+  document.getElementById('g-canton-fills').innerHTML = '';
   const w = document.getElementById('first-click-warning');
   // Show warning only on round 1 and if user hasn't permanently dismissed it
   const noWarning = (() => { try { return localStorage.getItem(FCW_KEY) === '1'; } catch(e) { return false; } })();
@@ -3739,9 +3743,6 @@ function startRound() {
   document.getElementById('round-result').style.display = 'none';
   document.getElementById('map-instr').textContent = 'Klick so genau wie möglich auf den gesuchten Ort';
   document.getElementById('map-wrap').style.cursor = 'crosshair';
-  document.getElementById('g-overlays').innerHTML = '';
-  document.getElementById('g-canton-fills').innerHTML = '';
-  drawCountry();
   for (let i = 0; i < 5; i++) {
     const d = document.getElementById('d' + i);
     d.className = 'rpip' + (i < roundIdx ? ' ' + dotCls(scores[i]) : i === roundIdx ? ' active' : '');
