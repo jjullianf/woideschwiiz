@@ -175,6 +175,11 @@ nav {
 }
 .hbtn:active { transform: scale(0.96); }
 .hbtn.on { background: var(--red-bg); color: var(--red); border-color: var(--red-ring); }
+@media (max-width: 600px) {
+  .hbtn { font-size: 11px; padding: 0 9px; height: 32px; border-radius: 16px; }
+  #helpers { gap: 4px; margin-bottom: 0.5rem; }
+  #share-box { display: none; }
+}
 
 /* Map */
 #map-wrap {
@@ -185,7 +190,7 @@ nav {
   touch-action: none;
   position: relative;
 }
-#map-wrap svg { display: block; width: 100%; height: auto; touch-action: none; }
+#map-svg { display: block; width: 100%; height: auto; touch-action: none; transform-origin: 0 0; }
 #map-instr {
   text-align: center; font-size: 12px; color: var(--text3);
   margin-top: 6px; padding: 0 4px;
@@ -222,6 +227,11 @@ nav {
 .btn:active { transform: scale(0.97); }
 .btn-whatsapp { background: #25D366; color: #fff; border-color: #25D366; }
 .btn-whatsapp:hover { background: #1fba58; border-color: #1fba58; }
+/* WhatsApp button: only on mobile */
+#btn-whatsapp { display: none; }
+@media (max-width: 600px) {
+  #btn-whatsapp { display: inline-flex; }
+}
 .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
 
 /* ── FINAL ── */
@@ -454,9 +464,9 @@ nav {
     <div id="rounds-list"></div>
     <div id="share-box"></div>
     <div class="btn-row">
-      <button class="btn" id="btn-share">Kopieren ↗</button>
-      <button class="btn btn-whatsapp" id="btn-whatsapp">WhatsApp ↗</button>
       <button class="btn btn-red" id="btn-again">Nochmals spielen</button>
+      <button class="btn" id="btn-share">Teilen ↗</button>
+      <button class="btn btn-whatsapp" id="btn-whatsapp">WhatsApp ↗</button>
     </div>
   </div>
 
@@ -3461,19 +3471,18 @@ const PLACES = [
   {n:"Trübbach",lat:47.0734,lng:9.48,d:2,kt:"SG"},
   {n:"Azmoos",lat:47.0798,lng:9.4748,d:2,kt:"SG"},
   {n:"Oberschan",lat:47.0988,lng:9.4741,d:2,kt:"SG"},
-  {n:"Nendeln",lat:47.1974,lng:9.5434,d:2,kt:NaN},
-  {n:"Schaanwald",lat:47.212,lng:9.562,d:2,kt:NaN},
-  {n:"Gamprin-Bendern",lat:47.22,lng:9.5114,d:2,kt:NaN},
-  {n:"Schellenberg",lat:47.2303,lng:9.544,d:2,kt:NaN},
-  {n:"Vaduz",lat:47.1431,lng:9.5175,d:2,kt:NaN},
-  {n:"Ruggell",lat:47.2388,lng:9.5259,d:2,kt:NaN},
-  {n:"Eschen",lat:47.2122,lng:9.5215,d:2,kt:NaN},
-  {n:"Mauren FL",lat:47.2191,lng:9.5437,d:2,kt:NaN},
-  {n:"Schaan",lat:47.1665,lng:9.5117,d:2,kt:NaN},
-  {n:"Triesen",lat:47.1091,lng:9.5279,d:2,kt:NaN},
-  {n:"Balzers",lat:47.0651,lng:9.5026,d:2,kt:NaN},
-  {n:"Triesenberg",lat:47.1187,lng:9.5483,d:2,kt:NaN},
-  {n:"Planken",lat:47.1854,lng:9.5452,d:2,kt:NaN},
+
+
+
+
+
+
+
+
+
+
+
+
   {n:"Wil SG",lat:47.4659,lng:9.0481,d:0,kt:"SG"},
   {n:"Braunau",lat:47.5031,lng:9.0702,d:2,kt:"TG"},
   {n:"Stehrenberg",lat:47.5227,lng:9.0897,d:2,kt:"TG"},
@@ -3712,6 +3721,9 @@ function showAlreadyPlayed(data) {
 
 function startRound() {
   guessed = false;
+  // Reset zoom/pan
+  mapState.scale = 1; mapState.tx = 0; mapState.ty = 0;
+  applyMapTransform();
   const p = places[roundIdx];
   currentKt = p.kt;
   document.getElementById('rnum').textContent = roundIdx + 1;
@@ -3873,8 +3885,142 @@ document.getElementById('nav-daily-btn').addEventListener('click', () => {
 document.getElementById('nav-free-btn').addEventListener('click', () => startGame('unlimited'));
 
 // ── MAP CLICK + TOUCH ─────────────────────────────────────────
+// ── MAP ZOOM & PAN ────────────────────────────────────────────
+const mapState = { scale: 1, tx: 0, ty: 0 };
+const MIN_SCALE = 1, MAX_SCALE = 8;
+
+function applyMapTransform() {
+  const svg = document.getElementById('map-svg');
+  svg.style.transform = `translate(${mapState.tx}px, ${mapState.ty}px) scale(${mapState.scale})`;
+}
+
+function clampMapTransform(wrap, svg) {
+  const ww = wrap.clientWidth, wh = wrap.clientHeight;
+  const sw = svg.clientWidth * mapState.scale;
+  const sh = svg.clientHeight * mapState.scale;
+  // Don't allow panning beyond edges
+  mapState.tx = Math.min(0, Math.max(mapState.tx, ww - sw));
+  mapState.ty = Math.min(0, Math.max(mapState.ty, wh - sh));
+}
+
+function zoomAt(cx, cy, newScale) {
+  const wrap = document.getElementById('map-wrap');
+  const svg  = document.getElementById('map-svg');
+  newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
+  // cx, cy are relative to wrap
+  const scaleRatio = newScale / mapState.scale;
+  mapState.tx = cx - scaleRatio * (cx - mapState.tx);
+  mapState.ty = cy - scaleRatio * (cy - mapState.ty);
+  mapState.scale = newScale;
+  clampMapTransform(wrap, svg);
+  applyMapTransform();
+}
+
+// Desktop: scroll wheel zoom
+document.getElementById('map-wrap').addEventListener('wheel', function(e) {
+  e.preventDefault();
+  const rect = this.getBoundingClientRect();
+  const cx = e.clientX - rect.left;
+  const cy = e.clientY - rect.top;
+  const delta = e.deltaY > 0 ? 0.85 : 1.18;
+  zoomAt(cx, cy, mapState.scale * delta);
+}, { passive: false });
+
+// Mobile: pinch zoom + pan
+let lastTouches = null, lastPinchDist = null, isPinching = false, panStart = null;
+
+document.getElementById('map-wrap').addEventListener('touchstart', function(e) {
+  if (e.touches.length === 2) {
+    isPinching = true;
+    lastPinchDist = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+    lastTouches = [
+      { x: e.touches[0].clientX, y: e.touches[0].clientY },
+      { x: e.touches[1].clientX, y: e.touches[1].clientY }
+    ];
+    e.preventDefault();
+  } else if (e.touches.length === 1 && mapState.scale > 1) {
+    // Single finger pan when zoomed in
+    panStart = { x: e.touches[0].clientX - mapState.tx, y: e.touches[0].clientY - mapState.ty };
+    e.preventDefault();
+  }
+}, { passive: false });
+
+document.getElementById('map-wrap').addEventListener('touchmove', function(e) {
+  if (e.touches.length === 2 && isPinching) {
+    e.preventDefault();
+    const dist = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+    const rect = this.getBoundingClientRect();
+    const cx = ((e.touches[0].clientX + e.touches[1].clientX) / 2) - rect.left;
+    const cy = ((e.touches[0].clientY + e.touches[1].clientY) / 2) - rect.top;
+    zoomAt(cx, cy, mapState.scale * (dist / lastPinchDist));
+    lastPinchDist = dist;
+    applyMapTransform();
+  } else if (e.touches.length === 1 && panStart && mapState.scale > 1) {
+    e.preventDefault();
+    const wrap = document.getElementById('map-wrap');
+    const svg  = document.getElementById('map-svg');
+    mapState.tx = e.touches[0].clientX - panStart.x;
+    mapState.ty = e.touches[0].clientY - panStart.y;
+    clampMapTransform(wrap, svg);
+    applyMapTransform();
+  }
+}, { passive: false });
+
+document.getElementById('map-wrap').addEventListener('touchend', function(e) {
+  if (e.touches.length < 2) { isPinching = false; lastPinchDist = null; }
+  if (e.touches.length === 0) { panStart = null; }
+});
+
+// Desktop: click-drag pan when zoomed
+let dragStart = null, dragged = false;
+document.getElementById('map-wrap').addEventListener('mousedown', function(e) {
+  if (mapState.scale > 1) {
+    dragStart = { x: e.clientX - mapState.tx, y: e.clientY - mapState.ty };
+    dragged = false;
+  }
+});
+document.getElementById('map-wrap').addEventListener('mousemove', function(e) {
+  if (!dragStart) return;
+  const dx = e.clientX - (dragStart.x + mapState.tx);
+  const dy = e.clientY - (dragStart.y + mapState.ty);
+  if (Math.hypot(dx, dy) > 4) dragged = true;
+  if (dragged) {
+    const wrap = this;
+    const svg  = document.getElementById('map-svg');
+    mapState.tx = e.clientX - dragStart.x;
+    mapState.ty = e.clientY - dragStart.y;
+    clampMapTransform(wrap, svg);
+    applyMapTransform();
+  }
+});
+document.addEventListener('mouseup', () => { dragStart = null; });
+
+// ── SWITZERLAND BOUNDARY CHECK ────────────────────────────────
+// Check if SVG point is inside Switzerland outline using ray-casting
+function isInsideSwitzerland(sx, sy) {
+  const paths = document.getElementById('g-country').querySelectorAll('path');
+  for (const path of paths) {
+    try {
+      const svgEl = document.getElementById('map-svg');
+      const pt = svgEl.createSVGPoint();
+      pt.x = sx; pt.y = sy;
+      if (path.isPointInFill(pt)) return true;
+    } catch(e) {}
+  }
+  return false;
+}
+
+// ── MAP CLICK + TOUCH ─────────────────────────────────────────
 function handleMapInteraction(e) {
   if (guessed) return;
+  if (isPinching) return;
+  if (dragged) return;
   e.preventDefault();
   const svg = document.getElementById('map-svg');
   const rect = svg.getBoundingClientRect();
@@ -3886,8 +4032,20 @@ function handleMapInteraction(e) {
   } else {
     clientX = e.clientX; clientY = e.clientY;
   }
-  const sx = (clientX - rect.left) * (VB.w / rect.width);
-  const sy = (clientY - rect.top)  * (VB.h / rect.height);
+  const sx = (clientX - rect.left) / (rect.width  / VB.w);
+  const sy = (clientY - rect.top)  / (rect.height / VB.h);
+
+  // Reject clicks outside Switzerland
+  if (!isInsideSwitzerland(sx, sy)) {
+    // Briefly show hint
+    const instr = document.getElementById('map-instr');
+    const prev = instr.textContent;
+    instr.textContent = '⚠️ Bitte auf die Schweiz klicken';
+    instr.style.color = 'var(--red)';
+    setTimeout(() => { instr.textContent = prev; instr.style.color = ''; }, 1500);
+    return;
+  }
+
   const { lat: glat, lng: glng } = fromXY(sx, sy);
   guessed = true;
   document.getElementById('map-wrap').style.cursor = 'default';
@@ -3918,37 +4076,54 @@ function handleMapInteraction(e) {
   document.getElementById('sb-fill').style.width      = Math.round(sc / 50) + '%';
   document.getElementById('sb-fill').style.background = scColor(sc);
   document.getElementById('map-instr').textContent = '📍 ' + p.n + ' — grüner Punkt';
+  document.getElementById('map-instr').style.color = '';
   document.getElementById('round-result').style.display = 'block';
   document.getElementById('btn-next-round').textContent = roundIdx < 4 ? 'Weiter →' : 'Ergebnis anzeigen →';
   setTimeout(() => {
     document.getElementById('round-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }, 100);
 }
-document.getElementById('map-svg').addEventListener('click', handleMapInteraction);
-document.getElementById('map-svg').addEventListener('touchend', handleMapInteraction, { passive: false });
+document.getElementById('map-svg').addEventListener('click', function(e) {
+  if (dragged) { dragged = false; return; }
+  handleMapInteraction(e);
+});
+document.getElementById('map-svg').addEventListener('touchend', function(e) {
+  if (isPinching) return;
+  handleMapInteraction(e);
+}, { passive: false });
 document.getElementById('btn-share').addEventListener('click', function() {
   const text = document.getElementById('share-box').textContent;
   const btn = this;
   function markCopied() {
     btn.textContent = 'Kopiert ✓';
-    setTimeout(() => btn.textContent = 'Kopieren ↗', 2000);
+    setTimeout(() => btn.textContent = 'Teilen ↗', 2000);
   }
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).then(markCopied).catch(() => {
-      fallbackCopy(text); markCopied();
+  // Use native share if available (works on mobile and modern desktop)
+  if (navigator.share) {
+    navigator.share({ text: text }).catch(() => {
+      // Fallback to clipboard if share is cancelled or fails
+      copyToClipboard(text, markCopied);
     });
-  } else { fallbackCopy(text); markCopied(); }
+  } else {
+    copyToClipboard(text, markCopied);
+  }
 });
 document.getElementById('btn-whatsapp').addEventListener('click', function() {
   const text = document.getElementById('share-box').textContent;
-  // Try native share (mobile) — passes emojis perfectly
+  // Native share on mobile (passes emojis perfectly)
   if (navigator.share) {
     navigator.share({ text: text }).catch(() => {});
   } else {
-    // Desktop fallback: open WhatsApp Web
     window.open('https://web.whatsapp.com/send?text=' + encodeURIComponent(text), '_blank');
   }
 });
+function copyToClipboard(text, callback) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(callback).catch(() => {
+      fallbackCopy(text); callback();
+    });
+  } else { fallbackCopy(text); callback(); }
+}
 function fallbackCopy(text) {
   const ta = document.createElement('textarea');
   ta.value = text; ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
