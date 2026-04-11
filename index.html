@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Z31Y6X1L00"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-Z31Y6X1L00');
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Wo i de Schwiiz?</title>
@@ -3841,7 +3849,8 @@ document.getElementById('daily-date').textContent = new Date().toLocaleDateStrin
 (function() {
   const savedMode = (() => { try { return sessionStorage.getItem('wids_mode'); } catch(e) { return null; } })();
   if (savedMode === 'unlimited') {
-    startGame('unlimited');
+    // Defer one frame so DOM/CSS is fully ready before showing game
+    requestAnimationFrame(() => startGame('unlimited'));
     return;
   }
   const saved = localStorage.getItem(DAILY_KEY);
@@ -3934,11 +3943,16 @@ document.getElementById('map-wrap').addEventListener('wheel', function(e) {
 }, { passive: false });
 
 // Mobile: pinch zoom + pan
+// ── TOUCH STATE ──────────────────────────────────────────────
 let lastTouches = null, lastPinchDist = null, isPinching = false, panStart = null;
+let lastPinchEnd = 0;
+let touchMoved = false;     // did the single finger move significantly?
+let touchStartPos = null;   // where the touch started
 
 document.getElementById('map-wrap').addEventListener('touchstart', function(e) {
   if (e.touches.length === 2) {
     isPinching = true;
+    touchMoved = true; // pinch always counts as moved
     lastPinchDist = Math.hypot(
       e.touches[0].clientX - e.touches[1].clientX,
       e.touches[0].clientY - e.touches[1].clientY
@@ -3948,10 +3962,13 @@ document.getElementById('map-wrap').addEventListener('touchstart', function(e) {
       { x: e.touches[1].clientX, y: e.touches[1].clientY }
     ];
     e.preventDefault();
-  } else if (e.touches.length === 1 && mapState.scale > 1) {
-    // Single finger pan when zoomed in
-    panStart = { x: e.touches[0].clientX - mapState.tx, y: e.touches[0].clientY - mapState.ty };
-    e.preventDefault();
+  } else if (e.touches.length === 1) {
+    touchMoved = false;
+    touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    if (mapState.scale > 1) {
+      panStart = { x: e.touches[0].clientX - mapState.tx, y: e.touches[0].clientY - mapState.ty };
+      e.preventDefault();
+    }
   }
 }, { passive: false });
 
@@ -3968,27 +3985,37 @@ document.getElementById('map-wrap').addEventListener('touchmove', function(e) {
     zoomAt(cx, cy, mapState.scale * (dist / lastPinchDist));
     lastPinchDist = dist;
     applyMapTransform();
-  } else if (e.touches.length === 1 && panStart && mapState.scale > 1) {
-    e.preventDefault();
-    const wrap = document.getElementById('map-wrap');
-    const svg  = document.getElementById('map-svg');
-    mapState.tx = e.touches[0].clientX - panStart.x;
-    mapState.ty = e.touches[0].clientY - panStart.y;
-    clampMapTransform(wrap, svg);
-    applyMapTransform();
+  } else if (e.touches.length === 1) {
+    // Track if finger moved more than 8px (= pan, not tap)
+    if (touchStartPos) {
+      const dx = e.touches[0].clientX - touchStartPos.x;
+      const dy = e.touches[0].clientY - touchStartPos.y;
+      if (Math.hypot(dx, dy) > 8) touchMoved = true;
+    }
+    if (panStart && mapState.scale > 1) {
+      e.preventDefault();
+      const wrap = document.getElementById('map-wrap');
+      const svg  = document.getElementById('map-svg');
+      mapState.tx = e.touches[0].clientX - panStart.x;
+      mapState.ty = e.touches[0].clientY - panStart.y;
+      clampMapTransform(wrap, svg);
+      applyMapTransform();
+    }
   }
 }, { passive: false });
 
-let lastPinchEnd = 0;
 document.getElementById('map-wrap').addEventListener('touchend', function(e) {
   if (e.touches.length < 2) {
     if (isPinching) {
       isPinching = false;
-      lastPinchEnd = Date.now(); // cooldown: ignore next touchend
+      lastPinchEnd = Date.now();
     }
     lastPinchDist = null;
   }
-  if (e.touches.length === 0) { panStart = null; }
+  if (e.touches.length === 0) {
+    panStart = null;
+    touchStartPos = null;
+  }
 });
 
 // Desktop: click-drag pan when zoomed
@@ -4103,7 +4130,8 @@ document.getElementById('map-svg').addEventListener('click', function(e) {
 });
 document.getElementById('map-svg').addEventListener('touchend', function(e) {
   if (isPinching) return;
-  if (Date.now() - lastPinchEnd < 400) return; // cooldown after pinch
+  if (touchMoved) return;                        // finger was dragging, not tapping
+  if (Date.now() - lastPinchEnd < 400) return;  // cooldown after pinch
   handleMapInteraction(e);
 }, { passive: false });
 document.getElementById('btn-share').addEventListener('click', function() {
