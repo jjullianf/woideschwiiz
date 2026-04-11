@@ -3686,6 +3686,7 @@ function startGame(m) {
   // Always hide start overlay when starting any game
   const ov = document.getElementById('start-overlay');
   if (ov) ov.style.display = 'none';
+  try { sessionStorage.setItem('wids_mode', m); } catch(e) {}
   mode = m;
   if (m === 'daily') {
     const saved = localStorage.getItem(DAILY_KEY);
@@ -3836,8 +3837,13 @@ function showFinal() {
 // ── BUTTON LISTENERS ──────────────────────────────────────────
 updateStatsDisplay();
 document.getElementById('daily-date').textContent = new Date().toLocaleDateString('de-CH', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
-// Auto-start: show map with start overlay, or show already-played
+// Auto-start: restore mode from session, or show daily
 (function() {
+  const savedMode = (() => { try { return sessionStorage.getItem('wids_mode'); } catch(e) { return null; } })();
+  if (savedMode === 'unlimited') {
+    startGame('unlimited');
+    return;
+  }
   const saved = localStorage.getItem(DAILY_KEY);
   if (saved) { showAlreadyPlayed(JSON.parse(saved)); }
   else { showDailyReady(); }
@@ -3845,6 +3851,7 @@ document.getElementById('daily-date').textContent = new Date().toLocaleDateStrin
 
 function showDailyReady() {
   mode = 'daily';
+  try { sessionStorage.setItem('wids_mode', 'daily'); } catch(e) {}
   places = getDailyPlaces();
   roundIdx = 0; scores = []; dists = [];
   hide('already-played'); hide('final-screen'); hide('daily-header');
@@ -3972,8 +3979,15 @@ document.getElementById('map-wrap').addEventListener('touchmove', function(e) {
   }
 }, { passive: false });
 
+let lastPinchEnd = 0;
 document.getElementById('map-wrap').addEventListener('touchend', function(e) {
-  if (e.touches.length < 2) { isPinching = false; lastPinchDist = null; }
+  if (e.touches.length < 2) {
+    if (isPinching) {
+      isPinching = false;
+      lastPinchEnd = Date.now(); // cooldown: ignore next touchend
+    }
+    lastPinchDist = null;
+  }
   if (e.touches.length === 0) { panStart = null; }
 });
 
@@ -4089,6 +4103,7 @@ document.getElementById('map-svg').addEventListener('click', function(e) {
 });
 document.getElementById('map-svg').addEventListener('touchend', function(e) {
   if (isPinching) return;
+  if (Date.now() - lastPinchEnd < 400) return; // cooldown after pinch
   handleMapInteraction(e);
 }, { passive: false });
 document.getElementById('btn-share').addEventListener('click', function() {
