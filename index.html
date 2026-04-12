@@ -3726,6 +3726,8 @@ function startGame(m) {
   if (ov) ov.style.display = 'none';
   try { sessionStorage.setItem('wids_mode', m); } catch(e) {}
   mode = m;
+  // Track game start
+  try { gtag('event', 'game_start', { mode: m }); } catch(e) {}
   if (m === 'daily') {
     const saved = localStorage.getItem(DAILY_KEY);
     if (saved) { showAlreadyPlayed(JSON.parse(saved)); return; }
@@ -3915,6 +3917,7 @@ function showDailyReady() {
 document.getElementById('start-overlay-btn').addEventListener('click', function() {
   const ov = document.getElementById('start-overlay');
   if (ov) ov.style.display = 'none';
+  try { gtag('event', 'game_start', { mode: 'daily' }); } catch(e) {}
   showCantons = true; showCities = false; showKt = false; showLakes = false;
   updateHelperBtns(); renderHelpers();
   startRound();
@@ -4167,6 +4170,7 @@ document.getElementById('map-svg').addEventListener('touchend', function(e) {
 document.getElementById('btn-share').addEventListener('click', function() {
   const text = document.getElementById('share-box').textContent;
   const btn = this;
+  try { gtag('event', 'share', { method: 'copy', mode: mode }); } catch(e) {}
   function markCopied() {
     btn.textContent = 'Kopiert ✓';
     setTimeout(() => btn.textContent = 'Teilen ↗', 2000);
@@ -4183,6 +4187,7 @@ document.getElementById('btn-share').addEventListener('click', function() {
 });
 document.getElementById('btn-whatsapp').addEventListener('click', function() {
   const text = document.getElementById('share-box').textContent;
+  try { gtag('event', 'share', { method: 'whatsapp', mode: mode }); } catch(e) {}
   // Native share on mobile (passes emojis perfectly)
   if (navigator.share) {
     navigator.share({ text: text }).catch(() => {});
