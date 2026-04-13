@@ -101,9 +101,16 @@ nav {
   -webkit-tap-highlight-color: transparent;
 }
 .nav-btn:hover { background: var(--bg2); color: var(--text); }
-.nav-btn.active { background: var(--red); color: #fff; border-radius: 8px; }
-@media (max-width: 360px) {
+.nav-btn.active { background: var(--red); color: #fff; }
+/* Support button: show full text on desktop, emoji only on mobile */
+.nav-support-text { display: inline; }
+@media (max-width: 600px) {
+  .nav-logo { font-size: 14px; max-width: 130px; }
+  .nav-logo span { font-size: 12px; }
+  .nav-support-text { display: none; }
   .nav-btn .nav-emoji { display: none; }
+}
+@media (max-width: 360px) {
   .nav-logo span { display: none; }
 }
 
@@ -428,7 +435,7 @@ nav {
 <nav>
   <span class="nav-logo">Wo i de Schwiiz?<span>🇨🇭</span></span>
   <div class="nav-right">
-    <a href="/support.html" class="nav-btn" style="text-decoration:none;">☕ Unterstützen</a>
+    <a href="/support.html" class="nav-btn" style="text-decoration:none;">☕<span class="nav-support-text"> Unterstützen</span></a>
     <button class="nav-btn" id="nav-daily-btn">Tages Challenge</button>
     <button class="nav-btn" id="nav-free-btn">Unlimitiert</button>
   </div>
@@ -3889,7 +3896,7 @@ async function apLbLoad() {
   if (!list) return;
   try {
     const res = await fetch(
-      `${SB_URL}/rest/v1/Leaderboard?day=eq.${day}&order=score.desc&limit=10`,
+      `${SB_URL}/rest/v1/leaderboard?day=eq.${day}&order=score.desc&limit=10`,
       { headers: SB_HEADERS }
     );
     const rows = await res.json();
@@ -4420,7 +4427,7 @@ async function lbLoad() {
   const list = document.getElementById('lb-list');
   try {
     const res = await fetch(
-      `${SB_URL}/rest/v1/Leaderboard?day=eq.${day}&order=score.desc&limit=10`,
+      `${SB_URL}/rest/v1/leaderboard?day=eq.${day}&order=score.desc&limit=10`,
       { headers: SB_HEADERS }
     );
     const rows = await res.json();
@@ -4481,7 +4488,7 @@ document.getElementById('lb-submit-btn').addEventListener('click', async functio
   msg.textContent = '';
   try {
     const day = lbGetDay();
-    const res = await fetch(`${SB_URL}/rest/v1/Leaderboard`, {
+    const res = await fetch(`${SB_URL}/rest/v1/leaderboard`, {
       method: 'POST',
       headers: { ...SB_HEADERS, 'Prefer': 'return=minimal' },
       body: JSON.stringify({ name, score: lbMyScore, day })
@@ -4523,7 +4530,7 @@ document.getElementById('ap-lb-submit-btn').addEventListener('click', async func
   this.disabled = true; this.textContent = '…'; msg.textContent = '';
   try {
     const day = lbGetDay();
-    const res = await fetch(`${SB_URL}/rest/v1/Leaderboard`, {
+    const res = await fetch(`${SB_URL}/rest/v1/leaderboard`, {
       method: 'POST',
       headers: { ...SB_HEADERS, 'Prefer': 'return=minimal' },
       body: JSON.stringify({ name, score: lbMyScore, day })
