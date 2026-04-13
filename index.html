@@ -243,6 +243,35 @@ nav {
 .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
 
 /* ── LEADERBOARD ── */
+#final-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+#final-left { width: 100%; }
+@media (min-width: 900px) {
+  #app { max-width: 1100px; }
+  #final-inner {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 2.5rem;
+  }
+  #final-left {
+    flex: 1;
+    min-width: 0;
+  }
+  #lb-section {
+    width: 300px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 1rem;
+    border-top: none !important;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    border-left: 1px solid var(--border);
+    padding-left: 2rem;
+  }
+}
 #lb-section {
   display: none;
   margin-top: 2rem;
@@ -442,6 +471,18 @@ nav {
     <div class="btn-row" style="justify-content:center;">
       <button class="btn btn-red" id="ap-unlimited">Unlimitiert spielen</button>
     </div>
+    <!-- Leaderboard on already-played screen -->
+    <div id="ap-lb-section" style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);">
+      <div class="lb-title">🏆 Tages-Leaderboard</div>
+      <div id="ap-lb-submit-wrap">
+        <div class="lb-submit-row">
+          <input type="text" id="ap-lb-name-input" placeholder="Dein Name" maxlength="20" autocomplete="off" spellcheck="false">
+          <button class="btn btn-red" id="ap-lb-submit-btn">Eintragen</button>
+        </div>
+        <div id="ap-lb-submit-msg"></div>
+      </div>
+      <div id="ap-lb-list"><div class="lb-loading">Lade Leaderboard…</div></div>
+    </div>
   </div>
 
   <!-- GAME -->
@@ -504,34 +545,39 @@ nav {
 
   <!-- FINAL -->
   <div id="final-screen">
-    <div class="final-header">
-      <h2 id="final-title"></h2>
-      <p id="final-sub"></p>
-    </div>
-    <div id="total-card">
-      <div id="total-lbl">Gesamtpunkte</div>
-      <div id="total-val">—</div>
-      <div id="total-max">von 25 000 möglichen Punkten</div>
-    </div>
-    <div id="rounds-list"></div>
-    <div id="share-box"></div>
-    <div class="btn-row">
-      <button class="btn btn-red" id="btn-again">Nochmals spielen</button>
-      <button class="btn" id="btn-share">Teilen ↗</button>
-      <button class="btn btn-whatsapp" id="btn-whatsapp">WhatsApp ↗</button>
-    </div>
-
-    <!-- LEADERBOARD (daily only) -->
-    <div id="lb-section">
-      <div class="lb-title">🏆 Tages-Leaderboard</div>
-      <div id="lb-submit-wrap">
-        <div class="lb-submit-row">
-          <input type="text" id="lb-name-input" placeholder="Dein Name" maxlength="20" autocomplete="off" spellcheck="false">
-          <button class="btn btn-red" id="lb-submit-btn">Eintragen</button>
+    <div id="final-inner">
+      <!-- Left / top: results -->
+      <div id="final-left">
+        <div class="final-header">
+          <h2 id="final-title"></h2>
+          <p id="final-sub"></p>
         </div>
-        <div id="lb-submit-msg"></div>
+        <div id="total-card">
+          <div id="total-lbl">Gesamtpunkte</div>
+          <div id="total-val">—</div>
+          <div id="total-max">von 25 000 möglichen Punkten</div>
+        </div>
+        <div id="rounds-list"></div>
+        <div id="share-box"></div>
+        <div class="btn-row">
+          <button class="btn btn-red" id="btn-again">Nochmals spielen</button>
+          <button class="btn" id="btn-share">Teilen ↗</button>
+          <button class="btn btn-whatsapp" id="btn-whatsapp">WhatsApp ↗</button>
+        </div>
       </div>
-      <div id="lb-list"><div class="lb-loading">Lade Leaderboard…</div></div>
+
+      <!-- Right / bottom: leaderboard (daily only) -->
+      <div id="lb-section">
+        <div class="lb-title">🏆 Tages-Leaderboard</div>
+        <div id="lb-submit-wrap">
+          <div class="lb-submit-row">
+            <input type="text" id="lb-name-input" placeholder="Dein Name" maxlength="20" autocomplete="off" spellcheck="false">
+            <button class="btn btn-red" id="lb-submit-btn">Eintragen</button>
+          </div>
+          <div id="lb-submit-msg"></div>
+        </div>
+        <div id="lb-list"><div class="lb-loading">Lade Leaderboard…</div></div>
+      </div>
     </div>
   </div>
 
@@ -3815,6 +3861,55 @@ function showAlreadyPlayed(data) {
   const apSw = document.getElementById('ap-streak-wrap');
   const apSt = loadStats();
   if (apSw) apSw.innerHTML = apSt.dailyStreak > 1 ? `<div class="streak-badge">🔥 ${apSt.dailyStreak} Tage in Folge</div>` : '';
+  // Show leaderboard on already-played screen
+  apLbShow(total);
+}
+
+function apLbShow(total) {
+  const day = lbGetDay();
+  const alreadySubmitted = (() => { try { return localStorage.getItem(LB_SUBMITTED_KEY + day); } catch(e) { return null; } })();
+  const submitWrap = document.getElementById('ap-lb-submit-wrap');
+  if (alreadySubmitted) {
+    lbMyName = alreadySubmitted;
+    lbMyScore = total;
+    if (submitWrap) submitWrap.style.display = 'none';
+  } else {
+    lbMyScore = total;
+    if (submitWrap) submitWrap.style.display = 'block';
+    const lastName = (() => { try { return localStorage.getItem('wids_lb_lastname') || ''; } catch(e) { return ''; } })();
+    const inp = document.getElementById('ap-lb-name-input');
+    if (inp && lastName) inp.value = lastName;
+  }
+  apLbLoad();
+}
+
+async function apLbLoad() {
+  const day = lbGetDay();
+  const list = document.getElementById('ap-lb-list');
+  if (!list) return;
+  try {
+    const res = await fetch(
+      `${SB_URL}/rest/v1/Leaderboard?day=eq.${day}&order=score.desc&limit=10`,
+      { headers: SB_HEADERS }
+    );
+    const rows = await res.json();
+    if (!Array.isArray(rows) || rows.length === 0) {
+      list.innerHTML = '<div class="lb-empty">Noch keine Einträge heute.</div>';
+      return;
+    }
+    const medals = ['🥇','🥈','🥉'];
+    const rankClass = ['gold','silver','bronze'];
+    list.innerHTML = rows.map((r, i) => {
+      const isMe = lbMyName && r.name === lbMyName && r.score === lbMyScore;
+      return `<div class="lb-row">
+        <div class="lb-rank ${rankClass[i] || ''}">${medals[i] || (i+1) + '.'}</div>
+        <div class="lb-name ${isMe ? 'lb-me' : ''}">${escHtml(r.name)}${isMe ? ' ← du' : ''}</div>
+        <div class="lb-score">${r.score.toLocaleString('de-CH')}</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    list.innerHTML = '<div class="lb-empty">Leaderboard konnte nicht geladen werden.</div>';
+  }
 }
 
 function startRound() {
@@ -4416,6 +4511,43 @@ document.getElementById('lb-submit-btn').addEventListener('click', async functio
 // Allow Enter key in name input
 document.getElementById('lb-name-input').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') document.getElementById('lb-submit-btn').click();
+});
+
+// Already-played leaderboard submit
+document.getElementById('ap-lb-submit-btn').addEventListener('click', async function() {
+  const input = document.getElementById('ap-lb-name-input');
+  const msg   = document.getElementById('ap-lb-submit-msg');
+  const name  = input.value.trim();
+  const err   = lbValidateName(name);
+  if (err) { msg.textContent = err; msg.className = 'error'; return; }
+  this.disabled = true; this.textContent = '…'; msg.textContent = '';
+  try {
+    const day = lbGetDay();
+    const res = await fetch(`${SB_URL}/rest/v1/Leaderboard`, {
+      method: 'POST',
+      headers: { ...SB_HEADERS, 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ name, score: lbMyScore, day })
+    });
+    if (res.ok || res.status === 201) {
+      lbMyName = name;
+      try { localStorage.setItem(LB_SUBMITTED_KEY + day, name); } catch(e) {}
+      try { localStorage.setItem('wids_lb_lastname', name); } catch(e) {}
+      document.getElementById('ap-lb-submit-wrap').style.display = 'none';
+      apLbLoad();
+      try { gtag('event', 'leaderboard_submit', { score: lbMyScore }); } catch(e) {}
+    } else {
+      msg.textContent = 'Fehler. Bitte nochmals versuchen.';
+      msg.className = 'error';
+      this.disabled = false; this.textContent = 'Eintragen';
+    }
+  } catch(e) {
+    msg.textContent = 'Keine Verbindung.';
+    msg.className = 'error';
+    this.disabled = false; this.textContent = 'Eintragen';
+  }
+});
+document.getElementById('ap-lb-name-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') document.getElementById('ap-lb-submit-btn').click();
 });
 </script>
 <!-- Hidden SEO keywords -->
