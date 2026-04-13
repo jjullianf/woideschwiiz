@@ -242,7 +242,51 @@ nav {
 }
 .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
 
-/* ── FINAL ── */
+/* ── LEADERBOARD ── */
+#lb-section {
+  display: none;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+.lb-title {
+  font-size: 16px; font-weight: 700; margin-bottom: 1rem;
+}
+.lb-submit-row {
+  display: flex; gap: 8px; margin-bottom: 6px;
+}
+#lb-name-input {
+  flex: 1; height: var(--touch-min);
+  border: 1px solid var(--border2); border-radius: var(--radius);
+  background: var(--bg); color: var(--text);
+  font-size: 15px; font-family: inherit;
+  padding: 0 12px; outline: none;
+  transition: border-color 0.15s;
+}
+#lb-name-input:focus { border-color: var(--red); }
+#lb-submit-msg {
+  font-size: 12px; min-height: 18px;
+  color: var(--text2); margin-bottom: 10px;
+}
+#lb-submit-msg.error { color: var(--red); }
+#lb-submit-msg.success { color: #1D9E75; }
+.lb-loading { font-size: 13px; color: var(--text3); padding: 8px 0; }
+.lb-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.lb-row:last-child { border-bottom: none; }
+.lb-rank { font-weight: 700; width: 28px; flex-shrink: 0; color: var(--text2); }
+.lb-rank.gold   { color: #F5B800; }
+.lb-rank.silver { color: #A0A0A0; }
+.lb-rank.bronze { color: #C47A3A; }
+.lb-name { flex: 1; font-weight: 500; color: var(--text); }
+.lb-name.lb-me  { color: var(--red); font-weight: 700; }
+.lb-score { font-weight: 700; color: var(--text); flex-shrink: 0; }
+.lb-empty { font-size: 13px; color: var(--text3); padding: 8px 0; }
+
+/* ── END LEADERBOARD ── */
 #final-screen { display: none; }
 .final-header { margin-bottom: 1.5rem; }
 .final-header h2 { font-size: 26px; font-weight: 700; margin-bottom: 3px; }
@@ -475,6 +519,19 @@ nav {
       <button class="btn btn-red" id="btn-again">Nochmals spielen</button>
       <button class="btn" id="btn-share">Teilen ↗</button>
       <button class="btn btn-whatsapp" id="btn-whatsapp">WhatsApp ↗</button>
+    </div>
+
+    <!-- LEADERBOARD (daily only) -->
+    <div id="lb-section">
+      <div class="lb-title">🏆 Tages-Leaderboard</div>
+      <div id="lb-submit-wrap">
+        <div class="lb-submit-row">
+          <input type="text" id="lb-name-input" placeholder="Dein Name" maxlength="20" autocomplete="off" spellcheck="false">
+          <button class="btn btn-red" id="lb-submit-btn">Eintragen</button>
+        </div>
+        <div id="lb-submit-msg"></div>
+      </div>
+      <div id="lb-list"><div class="lb-loading">Lade Leaderboard…</div></div>
     </div>
   </div>
 
@@ -3872,6 +3929,9 @@ function showFinal() {
   });
   document.getElementById('share-box').textContent =
     `Spill au «Wo i de Schwiiz»! 🇨🇭\n${mode === 'daily' ? 'Tages Challenge' : 'Unlimitiert'} · ${new Date().toLocaleDateString('de-CH')}\n${total.toLocaleString('de-CH')} / 25 000\n\n${lines.join('\n')}\n\nwoideschwiiz.ch`;
+
+  // Show leaderboard for daily mode
+  lbShowSection(total);
 }
 
 // ── BUTTON LISTENERS ──────────────────────────────────────────
@@ -4233,6 +4293,129 @@ document.addEventListener('keydown', (e) => {
   if (gameVisible && resultVisible) {
     document.getElementById('btn-next-round').click();
   }
+});
+
+// ── LEADERBOARD ───────────────────────────────────────────────
+const SB_URL = 'https://thxgpofgpeqtmhucouqq.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRoeGdwb2ZncGVxdG1odWNvdXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwODMxNzcsImV4cCI6MjA5MTY1OTE3N30.oUCwQeLTi1MjOzpH_wRIR6W9v_ghElAGnDzBPuc4Qls';
+const SB_HEADERS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' };
+
+const BANNED_WORDS = ['hitler','nazi','heil','isis','terrorist','nigger','faggot','retard','neger'];
+const LB_SUBMITTED_KEY = 'wids_lb_submitted_';
+let lbMyScore = 0;
+let lbMyName = '';
+
+function lbGetDay() { return Math.floor(Date.now() / 864e5); }
+
+function lbValidateName(name) {
+  const n = name.trim();
+  if (n.length < 2) return 'Mindestens 2 Zeichen';
+  if (n.length > 20) return 'Maximal 20 Zeichen';
+  if (!/^[a-zA-Z0-9äöüÄÖÜéàèâêîôûçÉÀÈ_\-]+$/.test(n)) return 'Nur Buchstaben, Zahlen, - und _ erlaubt';
+  if (/https?:|\.com|\.ch|\.net|\.org/i.test(n)) return 'Keine URLs erlaubt';
+  const lower = n.toLowerCase();
+  for (const w of BANNED_WORDS) {
+    if (lower.includes(w)) return 'Dieser Name ist nicht erlaubt';
+  }
+  return null; // valid
+}
+
+async function lbLoad() {
+  const day = lbGetDay();
+  const list = document.getElementById('lb-list');
+  try {
+    const res = await fetch(
+      `${SB_URL}/rest/v1/leaderboard?day=eq.${day}&order=score.desc&limit=10`,
+      { headers: SB_HEADERS }
+    );
+    const rows = await res.json();
+    if (!Array.isArray(rows) || rows.length === 0) {
+      list.innerHTML = '<div class="lb-empty">Noch keine Einträge heute — sei der Erste!</div>';
+      return;
+    }
+    const medals = ['🥇','🥈','🥉'];
+    const rankClass = ['gold','silver','bronze'];
+    list.innerHTML = rows.map((r, i) => {
+      const isMe = lbMyName && r.name === lbMyName && r.score === lbMyScore;
+      return `<div class="lb-row">
+        <div class="lb-rank ${rankClass[i] || ''}">${medals[i] || (i+1) + '.'}</div>
+        <div class="lb-name ${isMe ? 'lb-me' : ''}">${escHtml(r.name)}${isMe ? ' ← du' : ''}</div>
+        <div class="lb-score">${r.score.toLocaleString('de-CH')}</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    list.innerHTML = '<div class="lb-empty">Leaderboard konnte nicht geladen werden.</div>';
+  }
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function lbShowSection(total) {
+  if (mode !== 'daily') return;
+  lbMyScore = total;
+  const section = document.getElementById('lb-section');
+  section.style.display = 'block';
+  const day = lbGetDay();
+  const alreadySubmitted = (() => { try { return localStorage.getItem(LB_SUBMITTED_KEY + day); } catch(e) { return null; } })();
+  if (alreadySubmitted) {
+    lbMyName = alreadySubmitted;
+    document.getElementById('lb-submit-wrap').style.display = 'none';
+  } else {
+    document.getElementById('lb-submit-wrap').style.display = 'block';
+    // Pre-fill name if used before
+    const lastName = (() => { try { return localStorage.getItem('wids_lb_lastname') || ''; } catch(e) { return ''; } })();
+    if (lastName) document.getElementById('lb-name-input').value = lastName;
+  }
+  lbLoad();
+}
+
+document.getElementById('lb-submit-btn').addEventListener('click', async function() {
+  const input = document.getElementById('lb-name-input');
+  const msg   = document.getElementById('lb-submit-msg');
+  const name  = input.value.trim();
+  const err   = lbValidateName(name);
+  if (err) {
+    msg.textContent = err;
+    msg.className = 'error';
+    return;
+  }
+  this.disabled = true;
+  this.textContent = '…';
+  msg.textContent = '';
+  try {
+    const day = lbGetDay();
+    const res = await fetch(`${SB_URL}/rest/v1/leaderboard`, {
+      method: 'POST',
+      headers: { ...SB_HEADERS, 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ name, score: lbMyScore, day })
+    });
+    if (res.ok || res.status === 201) {
+      lbMyName = name;
+      try { localStorage.setItem(LB_SUBMITTED_KEY + day, name); } catch(e) {}
+      try { localStorage.setItem('wids_lb_lastname', name); } catch(e) {}
+      document.getElementById('lb-submit-wrap').style.display = 'none';
+      msg.textContent = '';
+      lbLoad();
+      try { gtag('event', 'leaderboard_submit', { score: lbMyScore }); } catch(e) {}
+    } else {
+      msg.textContent = 'Fehler beim Speichern. Bitte nochmals versuchen.';
+      msg.className = 'error';
+      this.disabled = false;
+      this.textContent = 'Eintragen';
+    }
+  } catch(e) {
+    msg.textContent = 'Keine Verbindung. Bitte nochmals versuchen.';
+    msg.className = 'error';
+    this.disabled = false;
+    this.textContent = 'Eintragen';
+  }
+});
+
+// Allow Enter key in name input
+document.getElementById('lb-name-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') document.getElementById('lb-submit-btn').click();
 });
 </script>
 <!-- Hidden SEO keywords -->
