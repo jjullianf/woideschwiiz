@@ -4325,7 +4325,7 @@ async function lbLoad() {
   const list = document.getElementById('lb-list');
   try {
     const res = await fetch(
-      `${SB_URL}/rest/v1/leaderboard?day=eq.${day}&order=score.desc&limit=10`,
+      `${SB_URL}/rest/v1/Leaderboard?day=eq.${day}&order=score.desc&limit=10`,
       { headers: SB_HEADERS }
     );
     const rows = await res.json();
@@ -4386,7 +4386,7 @@ document.getElementById('lb-submit-btn').addEventListener('click', async functio
   msg.textContent = '';
   try {
     const day = lbGetDay();
-    const res = await fetch(`${SB_URL}/rest/v1/leaderboard`, {
+    const res = await fetch(`${SB_URL}/rest/v1/Leaderboard`, {
       method: 'POST',
       headers: { ...SB_HEADERS, 'Prefer': 'return=minimal' },
       body: JSON.stringify({ name, score: lbMyScore, day })
