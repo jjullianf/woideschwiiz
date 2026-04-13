@@ -101,14 +101,27 @@ nav {
   -webkit-tap-highlight-color: transparent;
 }
 .nav-btn:hover { background: var(--bg2); color: var(--text); }
-.nav-btn.active { background: var(--red); color: #fff; }
-/* Support button: show full text on desktop, emoji only on mobile */
-.nav-support-text { display: inline; }
+/* Game mode buttons: underline instead of red block */
+.nav-btn.active { color: var(--red); font-weight: 600; }
+.nav-btn.active::after {
+  content: ''; display: block; position: absolute; bottom: 6px;
+  left: 12px; right: 12px; height: 2px;
+  background: var(--red); border-radius: 1px;
+}
+.nav-btn { position: relative; }
+/* Support button: always light red border */
+.nav-btn-support {
+  border: 1px solid var(--red-ring) !important;
+  color: var(--red) !important;
+  background: var(--red-bg) !important;
+}
+.nav-btn-support:hover { background: rgba(204,0,24,0.12) !important; }
 @media (max-width: 600px) {
   .nav-logo { font-size: 14px; max-width: 130px; }
   .nav-logo span { font-size: 12px; }
   .nav-support-text { display: none; }
   .nav-btn .nav-emoji { display: none; }
+  .nav-right { gap: 2px; }
 }
 @media (max-width: 360px) {
   .nav-logo span { display: none; }
@@ -116,6 +129,10 @@ nav {
 
 /* ── MAIN ── */
 #app { max-width: 680px; margin: 0 auto; padding: 1.25rem 1rem 5rem; }
+/* On desktop, page-wrap handles centering and flex layout */
+@media (min-width: 900px) {
+  #app { margin: 0; padding: 1.25rem 0 5rem; }
+}
 
 /* ── DAILY HEADER ── */
 .daily-label {
@@ -416,6 +433,8 @@ nav {
   #btn-next-round { width: 100%; }
   .final-header h2 { font-size: 22px; }
   #total-val { font-size: 40px; }
+  /* Nav buttons closer together, no red block */
+  .nav-right { gap: 2px; }
 }
 @media (max-width: 360px) {
   #place-name { font-size: 22px; }
@@ -427,6 +446,43 @@ nav {
     padding-right: max(1rem, env(safe-area-inset-right));
   }
 }
+
+/* ── DESKTOP TWO-COLUMN LAYOUT ── */
+#page-wrap {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+}
+#app {
+  flex: 1;
+  min-width: 0;
+  max-width: 680px;
+  padding: 1.25rem 0 5rem;
+}
+#lb-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 1rem;
+  padding-top: 1.25rem;
+  display: none; /* hidden on mobile */
+}
+@media (min-width: 900px) {
+  #lb-sidebar { display: block; }
+  #app { max-width: 680px; }
+  /* Hide inline leaderboard sections on desktop - sidebar takes over */
+  #lb-section { display: none !important; }
+  #ap-lb-section { display: none !important; }
+}
+.lb-sidebar-inner {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+}
 </style>
 </head>
 <body>
@@ -435,12 +491,13 @@ nav {
 <nav>
   <span class="nav-logo">Wo i de Schwiiz?<span>🇨🇭</span></span>
   <div class="nav-right">
-    <a href="/support.html" class="nav-btn" style="text-decoration:none;">☕<span class="nav-support-text"> Unterstützen</span></a>
+    <a href="/support.html" class="nav-btn nav-btn-support" style="text-decoration:none;">☕<span class="nav-support-text"> Unterstützen</span></a>
     <button class="nav-btn" id="nav-daily-btn">Tages Challenge</button>
     <button class="nav-btn" id="nav-free-btn">Unlimitiert</button>
   </div>
 </nav>
 
+<div id="page-wrap">
 <div id="app">
 
   <!-- DAILY HEADER (shown on start) -->
@@ -588,7 +645,24 @@ nav {
     </div>
   </div>
 
+</div><!-- end #app -->
+
+<!-- DESKTOP SIDEBAR LEADERBOARD -->
+<div id="lb-sidebar">
+  <div class="lb-sidebar-inner">
+    <div class="lb-title">🏆 Tages-Leaderboard</div>
+    <div id="sb-lb-submit-wrap">
+      <div class="lb-submit-row">
+        <input type="text" id="sb-lb-name-input" placeholder="Dein Name" maxlength="20" autocomplete="off" spellcheck="false">
+        <button class="btn btn-red" id="sb-lb-submit-btn">Eintragen</button>
+      </div>
+      <div id="sb-lb-submit-msg"></div>
+    </div>
+    <div id="sb-lb-list"><div class="lb-loading">Spiel zuerst das Daily!</div></div>
+  </div>
 </div>
+
+</div><!-- end #page-wrap -->
 
 
 <script>
@@ -3870,6 +3944,8 @@ function showAlreadyPlayed(data) {
   if (apSw) apSw.innerHTML = apSt.dailyStreak > 1 ? `<div class="streak-badge">🔥 ${apSt.dailyStreak} Tage in Folge</div>` : '';
   // Show leaderboard on already-played screen
   apLbShow(total);
+  sbLbShowSubmit(total);
+  sbLbLoad();
 }
 
 function apLbShow(total) {
@@ -4034,6 +4110,9 @@ function showFinal() {
 
   // Show leaderboard for daily mode
   lbShowSection(total);
+  // Show submit on sidebar too
+  sbLbShowSubmit(total);
+  sbLbLoad();
 }
 
 // ── BUTTON LISTENERS ──────────────────────────────────────────
@@ -4500,6 +4579,7 @@ document.getElementById('lb-submit-btn').addEventListener('click', async functio
       document.getElementById('lb-submit-wrap').style.display = 'none';
       msg.textContent = '';
       lbLoad();
+      sbLbLoad();
       try { gtag('event', 'leaderboard_submit', { score: lbMyScore }); } catch(e) {}
     } else {
       msg.textContent = 'Fehler beim Speichern. Bitte nochmals versuchen.';
@@ -4519,6 +4599,97 @@ document.getElementById('lb-submit-btn').addEventListener('click', async functio
 document.getElementById('lb-name-input').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') document.getElementById('lb-submit-btn').click();
 });
+
+// ── SIDEBAR LEADERBOARD (desktop) ────────────────────────────
+async function sbLbLoad() {
+  const day = lbGetDay();
+  const list = document.getElementById('sb-lb-list');
+  if (!list) return;
+  try {
+    const res = await fetch(
+      `${SB_URL}/rest/v1/leaderboard?day=eq.${day}&order=score.desc&limit=10`,
+      { headers: SB_HEADERS }
+    );
+    const rows = await res.json();
+    if (!Array.isArray(rows) || rows.length === 0) {
+      list.innerHTML = '<div class="lb-empty">Noch keine Einträge heute.</div>';
+      return;
+    }
+    const medals = ['🥇','🥈','🥉'];
+    const rankClass = ['gold','silver','bronze'];
+    list.innerHTML = rows.map((r, i) => {
+      const isMe = lbMyName && r.name === lbMyName && r.score === lbMyScore;
+      return `<div class="lb-row">
+        <div class="lb-rank ${rankClass[i] || ''}">${medals[i] || (i+1) + '.'}</div>
+        <div class="lb-name ${isMe ? 'lb-me' : ''}">${escHtml(r.name)}${isMe ? ' ← du' : ''}</div>
+        <div class="lb-score">${r.score.toLocaleString('de-CH')}</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    list.innerHTML = '<div class="lb-empty">Nicht verfügbar.</div>';
+  }
+}
+
+function sbLbShowSubmit(total) {
+  const day = lbGetDay();
+  const submitted = (() => { try { return localStorage.getItem(LB_SUBMITTED_KEY + day); } catch(e) { return null; } })();
+  const wrap = document.getElementById('sb-lb-submit-wrap');
+  if (!wrap) return;
+  if (submitted) {
+    lbMyName = submitted; lbMyScore = total;
+    wrap.style.display = 'none';
+  } else {
+    lbMyScore = total;
+    wrap.style.display = 'block';
+    const lastName = (() => { try { return localStorage.getItem('wids_lb_lastname') || ''; } catch(e) { return ''; } })();
+    const inp = document.getElementById('sb-lb-name-input');
+    if (inp && lastName) inp.value = lastName;
+  }
+}
+
+document.getElementById('sb-lb-submit-btn').addEventListener('click', async function() {
+  const input = document.getElementById('sb-lb-name-input');
+  const msg   = document.getElementById('sb-lb-submit-msg');
+  const name  = input.value.trim();
+  const err   = lbValidateName(name);
+  if (err) { msg.textContent = err; msg.className = 'error'; return; }
+  this.disabled = true; this.textContent = '…'; msg.textContent = '';
+  try {
+    const day = lbGetDay();
+    const res = await fetch(`${SB_URL}/rest/v1/leaderboard`, {
+      method: 'POST',
+      headers: { ...SB_HEADERS, 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ name, score: lbMyScore, day })
+    });
+    if (res.ok || res.status === 201) {
+      lbMyName = name;
+      try { localStorage.setItem(LB_SUBMITTED_KEY + day, name); } catch(e) {}
+      try { localStorage.setItem('wids_lb_lastname', name); } catch(e) {}
+      document.getElementById('sb-lb-submit-wrap').style.display = 'none';
+      sbLbLoad();
+      // also refresh inline versions
+      lbLoad(); apLbLoad();
+      try { gtag('event', 'leaderboard_submit', { score: lbMyScore }); } catch(e) {}
+    } else {
+      msg.textContent = 'Fehler. Bitte nochmals versuchen.';
+      msg.className = 'error';
+      this.disabled = false; this.textContent = 'Eintragen';
+    }
+  } catch(e) {
+    msg.textContent = 'Keine Verbindung.';
+    msg.className = 'error';
+    this.disabled = false; this.textContent = 'Eintragen';
+  }
+});
+document.getElementById('sb-lb-name-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') document.getElementById('sb-lb-submit-btn').click();
+});
+
+// Load sidebar leaderboard on page load (always visible on desktop)
+sbLbLoad();
+// Hide submit form until game is played
+const sbWrap = document.getElementById('sb-lb-submit-wrap');
+if (sbWrap) sbWrap.style.display = 'none';
 
 // Already-played leaderboard submit
 document.getElementById('ap-lb-submit-btn').addEventListener('click', async function() {
