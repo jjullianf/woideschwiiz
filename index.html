@@ -467,7 +467,12 @@ nav {
   position: sticky;
   top: 1rem;
   padding-top: 1.25rem;
-  display: none; /* hidden on mobile */
+  display: none;
+  overflow: hidden;
+  pointer-events: none; /* sidebar itself never blocks clicks */
+}
+#lb-sidebar .lb-sidebar-inner {
+  pointer-events: auto; /* only the inner card is interactive */
 }
 @media (min-width: 900px) {
   #lb-sidebar { display: block; }
@@ -476,8 +481,15 @@ nav {
   #lb-section { display: none !important; }
   #ap-lb-section { display: none !important; }
 }
-.lb-sidebar-inner {
-  background: var(--bg2);
+.lb-sidebar-inner .lb-submit-row {
+  flex-direction: column;
+}
+.lb-sidebar-inner #sb-lb-name-input {
+  width: 100%;
+}
+.lb-sidebar-inner #sb-lb-submit-btn {
+  width: 100%;
+}
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 1rem;
