@@ -101,14 +101,7 @@ nav {
   -webkit-tap-highlight-color: transparent;
 }
 .nav-btn:hover { background: var(--bg2); color: var(--text); }
-/* Game mode buttons: underline instead of red block */
-.nav-btn.active { color: var(--red); font-weight: 600; }
-.nav-btn.active::after {
-  content: ''; display: block; position: absolute; bottom: 6px;
-  left: 12px; right: 12px; height: 2px;
-  background: var(--red); border-radius: 1px;
-}
-.nav-btn { position: relative; }
+.nav-btn.active { color: var(--red); font-weight: 700; }
 /* Support button: always light red border */
 .nav-btn-support {
   border: 1px solid var(--red-ring) !important;
@@ -3910,7 +3903,7 @@ function getDailyPlaces() {
 
 const DAILY_KEY = 'wids_v1_' + Math.floor(Date.now() / 864e5);
 
-function show(id)  { document.getElementById(id).style.display = 'block'; }
+function show(id)  { document.getElementById(id).style.display = 'block'; window.scrollTo(0,0); }
 function hide(id)  { document.getElementById(id).style.display = 'none'; }
 
 function startGame(m) {
