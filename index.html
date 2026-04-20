@@ -307,7 +307,7 @@ nav {
 .lb-submit-row {
   display: flex; gap: 8px; margin-bottom: 6px; min-width: 0;
 }
-#lb-name-input, #ap-lb-name-input, #sb-lb-name-input {
+#lb-name-input, #ap-lb-name-input {
   flex: 1; min-width: 0;
   height: var(--touch-min);
   border: 1px solid var(--border2); border-radius: var(--radius);
@@ -316,7 +316,7 @@ nav {
   padding: 0 12px; outline: none;
   transition: border-color 0.15s;
 }
-#lb-name-input:focus, #ap-lb-name-input:focus, #sb-lb-name-input:focus { border-color: var(--red); }
+#lb-name-input:focus, #ap-lb-name-input:focus { border-color: var(--red); }
 #lb-submit-msg {
   font-size: 12px; min-height: 18px;
   color: var(--text2); margin-bottom: 10px;
@@ -449,61 +449,12 @@ nav {
 
 /* ── DESKTOP TWO-COLUMN LAYOUT ── */
 #page-wrap {
-  max-width: 1160px;
+  max-width: 680px;
   margin: 0 auto;
   padding: 0 1rem;
-  display: block; /* mobile: single column */
-}
-@media (min-width: 900px) {
-  #page-wrap {
-    display: flex;
-    align-items: flex-start;
-    gap: 2rem;
-  }
 }
 #app {
-  flex: 1;
-  min-width: 0;
-  max-width: 680px;
   padding: 1.25rem 0 5rem;
-}
-#lb-sidebar {
-  width: 260px;
-  flex-shrink: 0;
-  position: sticky;
-  top: 1rem;
-  padding-top: 1.25rem;
-  display: none;
-  overflow: hidden;
-  pointer-events: none; /* sidebar itself never blocks clicks */
-}
-#lb-sidebar .lb-sidebar-inner {
-  pointer-events: auto; /* only the inner card is interactive */
-}
-@media (min-width: 900px) {
-  #lb-sidebar { display: block; }
-  #app { max-width: 680px; }
-  /* Hide inline leaderboard sections on desktop - sidebar takes over */
-  #lb-section { display: none !important; }
-  #ap-lb-section { display: none !important; }
-}
-.lb-sidebar-inner .lb-submit-row {
-  flex-direction: column;
-}
-.lb-sidebar-inner #sb-lb-name-input {
-  width: 100%;
-}
-.lb-sidebar-inner #sb-lb-submit-btn {
-  width: 100%;
-}
-.lb-sidebar-inner {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 1rem;
-  overflow: hidden;
-  word-break: break-word;
-  overflow-wrap: anywhere;
 }
 </style>
 </head>
@@ -672,20 +623,6 @@ nav {
 </div><!-- end #app -->
 
 <!-- DESKTOP SIDEBAR LEADERBOARD -->
-<div id="lb-sidebar">
-  <div class="lb-sidebar-inner">
-    <div class="lb-title">🏆 Tages-Leaderboard</div>
-    <div id="sb-lb-submit-wrap">
-      <div class="lb-submit-row">
-        <input type="text" id="sb-lb-name-input" placeholder="Dein Name" maxlength="20" autocomplete="off" spellcheck="false">
-        <button class="btn btn-red" id="sb-lb-submit-btn">Eintragen</button>
-      </div>
-      <div id="sb-lb-submit-msg"></div>
-    </div>
-    <div id="sb-lb-list"><div class="lb-loading">Spiel zuerst das Daily!</div></div>
-  </div>
-</div>
-
 </div><!-- end #page-wrap -->
 
 
@@ -3968,8 +3905,6 @@ function showAlreadyPlayed(data) {
   if (apSw) apSw.innerHTML = apSt.dailyStreak > 1 ? `<div class="streak-badge">🔥 ${apSt.dailyStreak} Tage in Folge</div>` : '';
   // Show leaderboard on already-played screen
   apLbShow(total);
-  sbLbShowSubmit(total);
-  sbLbLoad();
 }
 
 function startRound() {
@@ -4088,8 +4023,6 @@ function showFinal() {
   // Show leaderboard for daily mode
   lbShowSection(total);
   // Show submit on sidebar too
-  sbLbShowSubmit(total);
-  sbLbLoad();
 }
 
 // ── BUTTON LISTENERS ──────────────────────────────────────────
@@ -4509,7 +4442,6 @@ async function lbRender(listEl) {
 
 async function lbLoad()    { await lbRender(document.getElementById('lb-list')); }
 async function apLbLoad()  { await lbRender(document.getElementById('ap-lb-list')); }
-async function sbLbLoad()  { await lbRender(document.getElementById('sb-lb-list')); }
 
 function apLbShow(total) {
   const day = lbGetDay();
@@ -4577,7 +4509,6 @@ document.getElementById('lb-submit-btn').addEventListener('click', async functio
       document.getElementById('lb-submit-wrap').style.display = 'none';
       msg.textContent = '';
       lbLoad();
-      sbLbLoad();
       try { gtag('event', 'leaderboard_submit', { score: lbMyScore }); } catch(e) {}
     } else {
       msg.textContent = 'Fehler beim Speichern. Bitte nochmals versuchen.';
@@ -4597,68 +4528,6 @@ document.getElementById('lb-submit-btn').addEventListener('click', async functio
 document.getElementById('lb-name-input').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') document.getElementById('lb-submit-btn').click();
 });
-
-// ── SIDEBAR LEADERBOARD (desktop) ────────────────────────────
-function sbLbShowSubmit(total) {
-  const day = lbGetDay();
-  const submitted = (() => { try { return localStorage.getItem(LB_SUBMITTED_KEY + day); } catch(e) { return null; } })();
-  const wrap = document.getElementById('sb-lb-submit-wrap');
-  if (!wrap) return;
-  if (submitted) {
-    lbMyName = submitted; lbMyScore = total;
-    wrap.style.display = 'none';
-  } else {
-    lbMyScore = total;
-    wrap.style.display = 'block';
-    const lastName = (() => { try { return localStorage.getItem('wids_lb_lastname') || ''; } catch(e) { return ''; } })();
-    const inp = document.getElementById('sb-lb-name-input');
-    if (inp && lastName) inp.value = lastName;
-  }
-}
-
-document.getElementById('sb-lb-submit-btn').addEventListener('click', async function() {
-  const input = document.getElementById('sb-lb-name-input');
-  const msg   = document.getElementById('sb-lb-submit-msg');
-  const name  = input.value.trim();
-  const err   = lbValidateName(name);
-  if (err) { msg.textContent = err; msg.className = 'error'; return; }
-  this.disabled = true; this.textContent = '…'; msg.textContent = '';
-  try {
-    const day = lbGetDay();
-    const res = await fetch(`${SB_URL}/rest/v1/leaderboard`, {
-      method: 'POST',
-      headers: { ...SB_HEADERS, 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ name, score: lbMyScore, day })
-    });
-    if (res.ok || res.status === 201) {
-      lbMyName = name;
-      try { localStorage.setItem(LB_SUBMITTED_KEY + day, name); } catch(e) {}
-      try { localStorage.setItem('wids_lb_lastname', name); } catch(e) {}
-      document.getElementById('sb-lb-submit-wrap').style.display = 'none';
-      sbLbLoad();
-      // also refresh inline versions
-      lbLoad(); apLbLoad();
-      try { gtag('event', 'leaderboard_submit', { score: lbMyScore }); } catch(e) {}
-    } else {
-      msg.textContent = 'Fehler. Bitte nochmals versuchen.';
-      msg.className = 'error';
-      this.disabled = false; this.textContent = 'Eintragen';
-    }
-  } catch(e) {
-    msg.textContent = 'Keine Verbindung.';
-    msg.className = 'error';
-    this.disabled = false; this.textContent = 'Eintragen';
-  }
-});
-document.getElementById('sb-lb-name-input').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') document.getElementById('sb-lb-submit-btn').click();
-});
-
-// Load sidebar leaderboard on page load (always visible on desktop)
-sbLbLoad();
-// Hide submit form until game is played
-const sbWrap = document.getElementById('sb-lb-submit-wrap');
-if (sbWrap) sbWrap.style.display = 'none';
 
 // Already-played leaderboard submit
 document.getElementById('ap-lb-submit-btn').addEventListener('click', async function() {
