@@ -466,7 +466,7 @@ nav {
   <div class="nav-right">
     <a href="/support.html" class="nav-btn nav-btn-support" style="text-decoration:none;">☕<span class="nav-support-text"> Unterstützen</span></a>
     <button class="nav-btn" id="nav-daily-btn">Tages Challenge</button>
-    <button class="nav-btn" id="nav-free-btn">Unlimitiert</button>
+    <a href="/play.html" class="nav-btn" id="nav-free-btn">Unlimitiert</a>
   </div>
 </nav>
 
@@ -506,7 +506,7 @@ nav {
     </div>
     <div id="ap-streak-wrap"></div>
     <div class="btn-row" style="justify-content:center;">
-      <button class="btn btn-red" id="ap-unlimited">Unlimitiert spielen</button>
+      <a href="/play.html" class="btn btn-red" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;" id="ap-unlimited">Unlimitiert spielen</a>
     </div>
     <!-- Leaderboard on already-played screen -->
     <div id="ap-lb-section" style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);">
@@ -4082,7 +4082,6 @@ document.getElementById('nav-daily-btn').addEventListener('click', () => {
   if (saved) { showAlreadyPlayed(JSON.parse(saved)); }
   else { showDailyReady(); }
 });
-document.getElementById('nav-free-btn').addEventListener('click', () => startGame('unlimited'));
 
 // ── MAP CLICK + TOUCH ─────────────────────────────────────────
 // ── MAP ZOOM & PAN ────────────────────────────────────────────
@@ -4373,7 +4372,6 @@ document.getElementById('btn-again').addEventListener('click', () => {
   }
 });
 
-document.getElementById('ap-unlimited').addEventListener('click', () => startGame('unlimited'));
 
 // ── SPACEBAR → NEXT ROUND ─────────────────────────────────────
 document.addEventListener('keydown', (e) => {
