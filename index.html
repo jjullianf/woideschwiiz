@@ -4434,6 +4434,7 @@ async function lbRender(listEl) {
       </div>`;
     }).join('');
   } catch(e) {
+    console.error('lbRender error:', e);
     listEl.innerHTML = '<div class="lb-empty">Leaderboard konnte nicht geladen werden.</div>';
   }
 }
@@ -4443,19 +4444,27 @@ async function apLbLoad()  { await lbRender(document.getElementById('ap-lb-list'
 
 function apLbShow(total) {
   const day = lbGetDay();
+  // Use passed total or fall back to saved score
+  if (total > 0) {
+    lbMyScore = total;
+  } else {
+    try {
+      const saved = localStorage.getItem('wids_v1_' + day);
+      if (saved) { const d = JSON.parse(saved); lbMyScore = d.total || 0; }
+    } catch(e) {}
+  }
   const submitted = (() => { try { return localStorage.getItem(LB_SUBMITTED_KEY + day); } catch(e) { return null; } })();
   const wrap = document.getElementById('ap-lb-submit-wrap');
   if (submitted) {
-    lbMyName = submitted; lbMyScore = total;
+    lbMyName = submitted;
     if (wrap) wrap.style.display = 'none';
   } else {
-    lbMyScore = total;
     if (wrap) wrap.style.display = 'block';
     const last = (() => { try { return localStorage.getItem('wids_lb_lastname') || ''; } catch(e) { return ''; } })();
     const inp = document.getElementById('ap-lb-name-input');
     if (inp && last) inp.value = last;
   }
-  apLbLoad();
+  setTimeout(() => apLbLoad(), 50);
 }
 function escHtml(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
