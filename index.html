@@ -3814,6 +3814,8 @@ function updateStatsDisplay() {
 }
 
 let mode = '', roundIdx = 0, places = [], scores = [], dists = [], guessed = false;
+let lbMyScore = 0;
+let lbMyName = '';
 let showCantons = false, showCities = false, showKt = false, showLakes = false, currentKt = '';
 
 function shuffle(a) {
@@ -4391,8 +4393,6 @@ const SB_HEADERS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Con
 
 const BANNED_WORDS = ['hitler','nazi','heil','isis','terrorist','nigger','faggot','retard','neger'];
 const LB_SUBMITTED_KEY = 'wids_lb_submitted_';
-let lbMyScore = 0;
-let lbMyName = '';
 
 function lbGetDay() { return Math.floor(Date.now() / 864e5); }
 
