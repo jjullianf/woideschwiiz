@@ -252,6 +252,12 @@ nav {
 .btn:active { transform: scale(0.97); }
 .btn-whatsapp { background: #25D366; color: #fff; border-color: #25D366; }
 .btn-whatsapp:hover { background: #1fba58; border-color: #1fba58; }
+.btn-again-main {
+  background: var(--red); color: #fff; border-color: var(--red);
+  font-size: 16px; font-weight: 600; padding: 0 24px;
+  box-shadow: 0 2px 8px rgba(204,0,24,0.25);
+}
+.btn-again-main:hover { background: var(--red2); border-color: var(--red2); }
 /* WhatsApp button: only on mobile */
 #btn-whatsapp { display: none; }
 @media (max-width: 600px) {
@@ -636,9 +642,11 @@ nav {
           <div id="total-max">von 25 000 möglichen Punkten</div>
         </div>
         <div id="rounds-list"></div>
+        <div class="btn-row" style="margin-bottom:0.75rem;">
+          <button class="btn btn-again-main" id="btn-again">↩ Nochmals spielen</button>
+        </div>
         <div id="share-box"></div>
-        <div class="btn-row">
-          <button class="btn btn-red" id="btn-again">Nochmals spielen</button>
+        <div class="btn-row" style="margin-top:0.75rem;">
           <button class="btn" id="btn-share">Teilen ↗</button>
           <button class="btn btn-whatsapp" id="btn-whatsapp">WhatsApp ↗</button>
         </div>
