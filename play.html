@@ -3808,6 +3808,7 @@ function startGame(m) {
   document.getElementById('game-title').textContent = 'Unlimitiert';
   try { document.getElementById('nav-daily-btn').className = 'nav-btn'; } catch(e) {}
   try { document.getElementById('nav-free-btn').className = 'nav-btn active'; } catch(e) {}
+  document.getElementById('helpers').style.display = 'flex';
   showCantons = true; showCities = false; showKt = false; showLakes = false;
   updateHelperBtns();
   renderHelpers();
