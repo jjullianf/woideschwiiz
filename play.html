@@ -3809,7 +3809,11 @@ function startGame(m) {
   try { document.getElementById('nav-daily-btn').className = 'nav-btn'; } catch(e) {}
   try { document.getElementById('nav-free-btn').className = 'nav-btn active'; } catch(e) {}
   document.getElementById('helpers').style.display = 'flex';
-  showCantons = true; showCities = false; showKt = false; showLakes = false;
+  if (scores.length === 0) {
+    // First ever game — set defaults
+    showCantons = true; showCities = false; showLakes = false;
+  }
+  showKt = false; // always reset canton reveal
   updateHelperBtns();
   renderHelpers();
   startRound();
