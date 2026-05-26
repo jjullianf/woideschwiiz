@@ -3888,8 +3888,8 @@ function startGame(m) {
   document.getElementById('game-title').textContent = m === 'daily' ? 'Tages Challenge' : 'Unlimitiert';
   document.getElementById('nav-daily-btn').className = 'nav-btn' + (m === 'daily' ? ' active' : '');
   document.getElementById('nav-free-btn').className = 'nav-btn' + (m !== 'daily' ? ' active' : '');
-  document.getElementById('helpers').style.display = m === 'daily' ? 'none' : 'flex';
-  showCantons = true; showCities = false; showKt = false; showLakes = false;
+  document.getElementById('helpers').style.display = 'flex';
+  showCantons = true; showCities = false; showKt = false; showLakes = (m === 'daily' ? true : true);
   updateHelperBtns();
   renderHelpers();
   startRound();
@@ -4493,17 +4493,21 @@ document.getElementById('lb-submit-btn').addEventListener('click', async functio
   const input = document.getElementById('lb-name-input');
   const msg   = document.getElementById('lb-submit-msg');
   const name  = input.value.trim();
-  const err   = lbValidateName(name);
-  if (err) {
-    msg.textContent = err;
-    msg.className = 'error';
+  const day   = lbGetDay();
+  // Block if already submitted today
+  const alreadyDone = (() => { try { return localStorage.getItem(LB_SUBMITTED_KEY + day); } catch(e) { return null; } })();
+  if (alreadyDone) {
+    document.getElementById('lb-submit-wrap').style.display = 'none';
+    lbMyName = alreadyDone;
+    lbLoad();
     return;
   }
+  const err = lbValidateName(name);
+  if (err) { msg.textContent = err; msg.className = 'error'; return; }
   this.disabled = true;
   this.textContent = '…';
   msg.textContent = '';
   try {
-    const day = lbGetDay();
     const res = await fetch(`${SB_URL}/rest/v1/leaderboard?apikey=${SB_KEY}`, {
       method: 'POST',
       headers: { ...SB_HEADERS, 'Prefer': 'return=minimal' },
@@ -4541,11 +4545,19 @@ document.getElementById('ap-lb-submit-btn').addEventListener('click', async func
   const input = document.getElementById('ap-lb-name-input');
   const msg   = document.getElementById('ap-lb-submit-msg');
   const name  = input.value.trim();
-  const err   = lbValidateName(name);
+  const day   = lbGetDay();
+  // Block if already submitted today
+  const alreadyDone = (() => { try { return localStorage.getItem(LB_SUBMITTED_KEY + day); } catch(e) { return null; } })();
+  if (alreadyDone) {
+    document.getElementById('ap-lb-submit-wrap').style.display = 'none';
+    lbMyName = alreadyDone;
+    apLbLoad();
+    return;
+  }
+  const err = lbValidateName(name);
   if (err) { msg.textContent = err; msg.className = 'error'; return; }
   this.disabled = true; this.textContent = '…'; msg.textContent = '';
   try {
-    const day = lbGetDay();
     const res = await fetch(`${SB_URL}/rest/v1/leaderboard?apikey=${SB_KEY}`, {
       method: 'POST',
       headers: { ...SB_HEADERS, 'Prefer': 'return=minimal' },
