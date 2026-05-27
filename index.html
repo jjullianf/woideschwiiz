@@ -4071,7 +4071,7 @@ document.getElementById('start-overlay-btn').addEventListener('click', function(
   const ov = document.getElementById('start-overlay');
   if (ov) ov.style.display = 'none';
   try { gtag('event', 'game_start', { mode: 'daily' }); } catch(e) {}
-  showCantons = true; showCities = false; showKt = false; showLakes = false;
+  showCantons = true; showCities = false; showKt = false; showLakes = true;
   updateHelperBtns(); renderHelpers();
   startRound();
 });
