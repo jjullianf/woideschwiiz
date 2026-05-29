@@ -303,25 +303,7 @@ nav {
     border-left: 1px solid var(--border);
     padding-left: 2rem;
   }
-  /* Game screen sidebar layout */
-  #game-inner {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    gap: 2.5rem;
-  }
-  #game-main {
-    flex: 1;
-    min-width: 0;
-  }
-  #game-lb-sidebar {
-    width: 300px;
-    flex-shrink: 0;
-    position: sticky;
-    top: 1rem;
-    border-left: 1px solid var(--border);
-    padding-left: 2rem;
-  }
+  /* Game screen layout handled separately below */
 }
 #lb-section {
   display: none;
@@ -499,6 +481,31 @@ nav {
 }
 #app {
   padding: 1.25rem 0 5rem;
+}
+@media (min-width: 1080px) {
+  #page-wrap {
+    max-width: 1060px;
+  }
+  #game-inner {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 2.5rem;
+  }
+  #game-main {
+    width: 680px;
+    flex-shrink: 0;
+  }
+  #game-lb-sidebar {
+    display: block;
+    flex: 1;
+    min-width: 260px;
+    position: sticky;
+    top: 1rem;
+    border-left: 1px solid var(--border);
+    padding-left: 2rem;
+  }
+  #game-lb-mobile { display: none; }
 }
 </style>
 </head>
@@ -3889,6 +3896,10 @@ function updateStatsDisplay() {
 let mode = '', roundIdx = 0, places = [], scores = [], dists = [], guessed = false;
 let lbMyScore = 0;
 let lbMyName = '';
+
+const SB_URL = 'https://thxgpofgpeqtmhucouqq.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRoeGdwb2ZncGVxdG1odWNvdXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwODMxNzcsImV4cCI6MjA5MTY1OTE3N30.oUCwQeLTi1MjOzpH_wRIR6W9v_ghElAGnDzBPuc4Qls';
+const SB_HEADERS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' };
 let showCantons = false, showCities = false, showKt = false, showLakes = false, currentKt = '';
 
 function shuffle(a) {
@@ -4462,9 +4473,6 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ── LEADERBOARD ───────────────────────────────────────────────
-const SB_URL = 'https://thxgpofgpeqtmhucouqq.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRoeGdwb2ZncGVxdG1odWNvdXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwODMxNzcsImV4cCI6MjA5MTY1OTE3N30.oUCwQeLTi1MjOzpH_wRIR6W9v_ghElAGnDzBPuc4Qls';
-const SB_HEADERS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' };
 
 const BANNED_WORDS = ['hitler','nazi','heil','isis','terrorist','nigger','faggot','retard','neger'];
 const LB_SUBMITTED_KEY = 'wids_lb_submitted_';
