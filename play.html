@@ -208,6 +208,12 @@ nav {
 }
 
 /* Map */
+.map-bg { fill: #ffffff; }
+@media (prefers-color-scheme: dark) {
+  #map-wrap { background: var(--bg2) !important; }
+  .map-bg { fill: var(--bg2) !important; }
+}
+
 #map-wrap {
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
@@ -512,7 +518,7 @@ nav {
         <div class="daily-start-sub">Der erste Klick zählt</div>
       </div>
       <svg id="map-svg" viewBox="0 0 800 520" xmlns="http://www.w3.org/2000/svg">
-        <rect width="800" height="520" fill="#ffffff"/>
+        <rect width="800" height="520" id="map-bg-rect" class="map-bg"/>
         <g id="g-country"></g>
         <g id="g-canton-fills"></g>
         <g id="g-canton-borders"></g>

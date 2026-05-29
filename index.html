@@ -209,11 +209,14 @@ nav {
 
 /* Map */
 /* Dark mode map */
+.map-bg { fill: #ffffff; }
 @media (prefers-color-scheme: dark) {
   #map-wrap {
-    background: #2a2a2a !important;
+    background: var(--bg2) !important;
   }
-  #map-svg rect { fill: #2a2a2a !important; }
+  .map-bg {
+    fill: var(--bg2) !important;
+  }
 }
 
 #map-wrap {
@@ -612,7 +615,7 @@ nav {
         <div class="daily-start-sub">Der erste Klick zählt</div>
       </div>
       <svg id="map-svg" viewBox="0 0 800 520" xmlns="http://www.w3.org/2000/svg">
-        <rect width="800" height="520" fill="#ffffff" id="map-bg-rect"/>
+        <rect width="800" height="520" id="map-bg-rect" class="map-bg"/>
         <g id="g-country"></g>
         <g id="g-canton-fills"></g>
         <g id="g-canton-borders"></g>
@@ -3795,12 +3798,7 @@ function mk(tag, attrs) {
 }
 
 function drawCountry() {
-  // Update background for dark mode
-  const bgRect = document.getElementById('map-bg-rect');
-  if (bgRect) {
-    const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    bgRect.setAttribute('fill', isDark ? '#2a2a2a' : '#ffffff');
-  }
+  // Background handled by CSS dark mode
   const g = document.getElementById('g-country');
   g.innerHTML = '';
   MAP_COUNTRY.forEach(d => {
@@ -4467,6 +4465,8 @@ document.getElementById('btn-again').addEventListener('click', () => {
 // ── SPACEBAR → NEXT ROUND ─────────────────────────────────────
 document.addEventListener('keydown', (e) => {
   if (e.code !== 'Space') return;
+  const finalVisible = document.getElementById('final-screen').style.display === 'block';
+  if (finalVisible) return; // don't interfere on final screen
   e.preventDefault();
   const resultVisible = document.getElementById('round-result').style.display === 'block';
   const gameVisible   = document.getElementById('game-screen').style.display   === 'block';
