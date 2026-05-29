@@ -330,6 +330,9 @@ nav {
 .lb-title {
   font-size: 16px; font-weight: 700; margin-bottom: 1rem;
 }
+.lb-hint {
+  font-size: 11px; color: var(--text3); margin-top: 4px;
+}
 .lb-submit-row {
   display: flex; gap: 8px; margin-bottom: 6px; min-width: 0;
 }
@@ -513,7 +516,7 @@ nav {
 
 <!-- NAV -->
 <nav>
-  <span class="nav-logo">Wo i de Schwiiz?<span>🇨🇭</span></span>
+  <a href="/" class="nav-logo" style="text-decoration:none;">Wo i de Schwiiz?<span>🇨🇭</span></a>
   <div class="nav-right">
     <button class="nav-btn" id="nav-daily-btn"><span class="nav-label-full">Tages Challenge</span><span class="nav-label-short">Daily</span></button>
     <a href="/play.html" class="nav-btn" id="nav-free-btn" style="text-decoration:none;">Unlimitiert</a>
@@ -4481,7 +4484,7 @@ function lbGetDay() { return Math.floor(Date.now() / 864e5); }
 
 function lbValidateName(name) {
   const n = name.trim();
-  if (n.length < 2) return 'Mindestens 2 Zeichen';
+  if (n.length < 2) return '✕ Mindestens 2 Zeichen';
   if (n.length > 20) return 'Maximal 20 Zeichen';
   if (!/^[a-zA-Z0-9äöüÄÖÜéàèâêîôûçÉÀÈ_\-]+$/.test(n)) return 'Nur Buchstaben, Zahlen, - und _ erlaubt';
   if (/https?:|\.com|\.ch|\.net|\.org/i.test(n)) return 'Keine URLs erlaubt';
@@ -4557,8 +4560,8 @@ document.getElementById('game-lb-submit-btn').addEventListener('click', async fu
     return;
   }
   const err = lbValidateName(name);
-  if (err) { msg.textContent = err; msg.className = 'error'; return; }
-  if (lbMyScore === 0) { msg.textContent = 'Spiel zuerst die Tages Challenge!'; msg.className = 'error'; return; }
+  if (err) { msg.textContent = err; msg.className = 'lb-hint'; return; }
+  if (lbMyScore === 0) { msg.textContent = 'Spiel zuerst die Tages Challenge!'; msg.className = 'lb-hint'; return; }
   this.disabled = true; this.textContent = '…'; msg.textContent = '';
   try {
     const res = await fetch(`${SB_URL}/rest/v1/leaderboard?apikey=${SB_KEY}`, {
@@ -4679,7 +4682,7 @@ document.getElementById('lb-submit-btn').addEventListener('click', async functio
     return;
   }
   const err = lbValidateName(name);
-  if (err) { msg.textContent = err; msg.className = 'error'; return; }
+  if (err) { msg.textContent = err; msg.className = 'lb-hint'; return; }
   this.disabled = true;
   this.textContent = '…';
   msg.textContent = '';
@@ -4731,7 +4734,7 @@ document.getElementById('ap-lb-submit-btn').addEventListener('click', async func
     return;
   }
   const err = lbValidateName(name);
-  if (err) { msg.textContent = err; msg.className = 'error'; return; }
+  if (err) { msg.textContent = err; msg.className = 'lb-hint'; return; }
   this.disabled = true; this.textContent = '…'; msg.textContent = '';
   try {
     const res = await fetch(`${SB_URL}/rest/v1/leaderboard?apikey=${SB_KEY}`, {
