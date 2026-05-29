@@ -102,6 +102,7 @@ nav {
 }
 .nav-btn:hover { background: var(--bg2); color: var(--text); }
 .nav-btn.active { color: var(--red); font-weight: 700; }
+.nav-label-short { display: none; }
 /* Support button: always light red border */
 .nav-btn-support {
   border: 1px solid var(--red-ring) !important;
@@ -112,9 +113,9 @@ nav {
 @media (max-width: 600px) {
   .nav-logo { font-size: 14px; max-width: 130px; }
   .nav-logo span { font-size: 12px; }
-  .nav-support-text { display: none; }
-  .nav-btn .nav-emoji { display: none; }
   .nav-right { gap: 2px; }
+  .nav-label-full { display: none; }
+  .nav-label-short { display: inline; }
 }
 @media (max-width: 360px) {
   .nav-logo span { display: none; }
@@ -464,9 +465,9 @@ nav {
 <nav>
   <span class="nav-logo">Wo i de Schwiiz?<span>🇨🇭</span></span>
   <div class="nav-right">
-    <a href="/support.html" class="nav-btn nav-btn-support" style="text-decoration:none;">☕<span class="nav-support-text"> Unterstützen</span></a>
-    <a href="/" class="nav-btn" id="nav-daily-btn" style="text-decoration:none;" onclick="try{sessionStorage.removeItem('wids_mode')}catch(e){}">Tages Challenge</a>
+    <a href="/" class="nav-btn" id="nav-daily-btn" style="text-decoration:none;" onclick="try{sessionStorage.removeItem('wids_mode')}catch(e){}"><span class="nav-label-full">Tages Challenge</span><span class="nav-label-short">Daily</span></a>
     <span class="nav-btn active" id="nav-free-btn">Unlimitiert</span>
+    <a href="/about.html" class="nav-btn" style="text-decoration:none;">About</a>
   </div>
 </nav>
 

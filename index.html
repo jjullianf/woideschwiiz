@@ -61,8 +61,8 @@
     --text: #f0ece6; --text2: #8a8680; --text3: #58554f;
     --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.15);
     --red-bg: #2a0d10; --red-ring: rgba(204,0,24,0.25);
-    --map-ch: #3d1a1e; --map-ch-stroke: #5a2830;
-    --map-lake: #1a3a50; --map-lake-stroke: #2a5070; --map-canton: #7a3040;
+    --map-ch: #f5f5f5; --map-ch-stroke: #cccccc;
+    --map-lake: #1a3a50; --map-lake-stroke: #2a5070; --map-canton: #aaaaaa;
   }
 }
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
@@ -109,12 +109,13 @@ nav {
   background: var(--red-bg) !important;
 }
 .nav-btn-support:hover { background: rgba(204,0,24,0.12) !important; }
+.nav-label-short { display: none; }
 @media (max-width: 600px) {
   .nav-logo { font-size: 14px; max-width: 130px; }
   .nav-logo span { font-size: 12px; }
-  .nav-support-text { display: none; }
-  .nav-btn .nav-emoji { display: none; }
   .nav-right { gap: 2px; }
+  .nav-label-full { display: none; }
+  .nav-label-short { display: inline; }
 }
 @media (max-width: 360px) {
   .nav-logo span { display: none; }
@@ -207,6 +208,14 @@ nav {
 }
 
 /* Map */
+/* Dark mode map */
+@media (prefers-color-scheme: dark) {
+  #map-wrap {
+    background: #2a2a2a !important;
+  }
+  #map-svg rect { fill: #2a2a2a !important; }
+}
+
 #map-wrap {
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
@@ -273,7 +282,7 @@ nav {
 }
 #final-left { width: 100%; }
 @media (min-width: 900px) {
-  #app { max-width: 1100px; }
+  #app { max-width: 1200px; }
   #final-inner {
     flex-direction: row;
     align-items: flex-start;
@@ -294,12 +303,47 @@ nav {
     border-left: 1px solid var(--border);
     padding-left: 2rem;
   }
+  /* Game screen sidebar layout */
+  #game-inner {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 2.5rem;
+  }
+  #game-main {
+    flex: 1;
+    min-width: 0;
+  }
+  #game-lb-sidebar {
+    width: 300px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 1rem;
+    border-left: 1px solid var(--border);
+    padding-left: 2rem;
+  }
 }
 #lb-section {
   display: none;
   margin-top: 2rem;
   padding-top: 1.5rem;
   border-top: 1px solid var(--border);
+}
+#game-lb-sidebar {
+  display: none;
+}
+@media (min-width: 900px) {
+  #game-lb-sidebar { display: block; }
+}
+/* Mobile: show leaderboard below game */
+#game-lb-mobile {
+  display: block;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+@media (min-width: 900px) {
+  #game-lb-mobile { display: none; }
 }
 .lb-title {
   font-size: 16px; font-weight: 700; margin-bottom: 1rem;
@@ -464,9 +508,9 @@ nav {
 <nav>
   <span class="nav-logo">Wo i de Schwiiz?<span>🇨🇭</span></span>
   <div class="nav-right">
-    <a href="/support.html" class="nav-btn nav-btn-support" style="text-decoration:none;">☕<span class="nav-support-text"> Unterstützen</span></a>
-    <button class="nav-btn" id="nav-daily-btn">Tages Challenge</button>
-    <a href="/play.html" class="nav-btn" id="nav-free-btn">Unlimitiert</a>
+    <button class="nav-btn" id="nav-daily-btn"><span class="nav-label-full">Tages Challenge</span><span class="nav-label-short">Daily</span></button>
+    <a href="/play.html" class="nav-btn" id="nav-free-btn" style="text-decoration:none;">Unlimitiert</a>
+    <a href="/about.html" class="nav-btn" id="nav-about-btn" style="text-decoration:none;">About</a>
   </div>
 </nav>
 
@@ -524,6 +568,8 @@ nav {
 
   <!-- GAME -->
   <div id="game-screen">
+  <div id="game-inner">
+  <div id="game-main">
     <div class="game-meta">
       <div class="game-mode-tag" id="game-title">Tageskarte</div>
       <div class="round-pip-row">
@@ -556,7 +602,7 @@ nav {
         <div class="daily-start-sub">Der erste Klick zählt</div>
       </div>
       <svg id="map-svg" viewBox="0 0 800 520" xmlns="http://www.w3.org/2000/svg">
-        <rect width="800" height="520" fill="#ffffff"/>
+        <rect width="800" height="520" fill="#ffffff" id="map-bg-rect"/>
         <g id="g-country"></g>
         <g id="g-canton-fills"></g>
         <g id="g-canton-borders"></g>
@@ -578,6 +624,27 @@ nav {
       </div>
       <button class="btn btn-red" id="btn-next-round">Weiter →</button>
     </div>
+  </div><!-- end game-main -->
+
+  <!-- Desktop sidebar leaderboard -->
+  <div id="game-lb-sidebar">
+    <div class="lb-title">🏆 Tages-Leaderboard</div>
+    <div id="game-lb-submit-wrap">
+      <div class="lb-submit-row">
+        <input type="text" id="game-lb-name-input" placeholder="Dein Name" maxlength="20" autocomplete="off" spellcheck="false">
+        <button class="btn btn-red" id="game-lb-submit-btn">Eintragen</button>
+      </div>
+      <div id="game-lb-submit-msg"></div>
+    </div>
+    <div id="game-lb-list"><div class="lb-loading">Lade Leaderboard…</div></div>
+  </div>
+
+  </div><!-- end game-inner -->
+
+  <!-- Mobile leaderboard below game -->
+  <div id="game-lb-mobile">
+    <div class="lb-title">🏆 Tages-Leaderboard</div>
+    <div id="game-lb-mobile-list"><div class="lb-loading">Lade Leaderboard…</div></div>
   </div>
 
   <!-- FINAL -->
@@ -3718,6 +3785,12 @@ function mk(tag, attrs) {
 }
 
 function drawCountry() {
+  // Update background for dark mode
+  const bgRect = document.getElementById('map-bg-rect');
+  if (bgRect) {
+    const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    bgRect.setAttribute('fill', isDark ? '#2a2a2a' : '#ffffff');
+  }
   const g = document.getElementById('g-country');
   g.innerHTML = '';
   MAP_COUNTRY.forEach(d => {
@@ -3907,6 +3980,7 @@ function showAlreadyPlayed(data) {
   if (apSw) apSw.innerHTML = apSt.dailyStreak > 1 ? `<div class="streak-badge">🔥 ${apSt.dailyStreak} Tage in Folge</div>` : '';
   // Show leaderboard on already-played screen
   apLbShow(total);
+  gameLbLoad();
 }
 
 function startRound() {
@@ -4065,6 +4139,7 @@ function showDailyReady() {
   document.getElementById('round-result').style.display = 'none';
   for (let i = 0; i < 5; i++) document.getElementById('d' + i).className = 'rpip';
   updateStatsDisplay();
+  gameLbLoad();
 }
 
 document.getElementById('start-overlay-btn').addEventListener('click', function() {
@@ -4410,6 +4485,99 @@ function lbValidateName(name) {
 }
 
 // Helper: render leaderboard rows into any list element
+
+// ── GAME-SCREEN LEADERBOARD ───────────────────────────────────
+async function gameLbRender() {
+  const sidebar = document.getElementById('game-lb-list');
+  const mobile  = document.getElementById('game-lb-mobile-list');
+  const day = lbGetDay();
+  const submitted = (() => { try { return localStorage.getItem(LB_SUBMITTED_KEY + day); } catch(e) { return null; } })();
+  // Show/hide submit on sidebar
+  const submitWrap = document.getElementById('game-lb-submit-wrap');
+  if (submitWrap) {
+    if (submitted || mode !== 'daily') {
+      submitWrap.style.display = 'none';
+    } else {
+      submitWrap.style.display = 'block';
+      const last = (() => { try { return localStorage.getItem('wids_lb_lastname') || ''; } catch(e) { return ''; } })();
+      const inp = document.getElementById('game-lb-name-input');
+      if (inp && last) inp.value = last;
+    }
+  }
+  if (!sidebar && !mobile) return;
+  try {
+    const res = await fetch(
+      `${SB_URL}/rest/v1/leaderboard?day=eq.${day}&order=score.desc&limit=10&apikey=${SB_KEY}`,
+      { headers: SB_HEADERS }
+    );
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const rows = await res.json();
+    const html = rows.length === 0
+      ? '<div class="lb-empty">Noch keine Einträge heute.</div>'
+      : rows.map((r, i) => {
+          const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `<span style="color:var(--text3);font-size:12px;">${i+1}.</span>`;
+          const isMe = r.name === lbMyName && lbMyName !== '';
+          return `<div class="lb-row${isMe ? ' lb-me' : ''}">
+            <span class="lb-rank">${medal}</span>
+            <span class="lb-name">${escHtml(r.name)}${isMe ? ' <span class="lb-you">← du</span>' : ''}</span>
+            <span class="lb-score">${r.score.toLocaleString('de-CH')}</span>
+          </div>`;
+        }).join('');
+    if (sidebar) sidebar.innerHTML = html;
+    if (mobile)  mobile.innerHTML  = html;
+  } catch(e) {
+    const err = '<div class="lb-empty">Leaderboard konnte nicht geladen werden.</div>';
+    if (sidebar) sidebar.innerHTML = err;
+    if (mobile)  mobile.innerHTML  = err;
+  }
+}
+
+async function gameLbLoad() {
+  await gameLbRender();
+}
+
+document.getElementById('game-lb-submit-btn').addEventListener('click', async function() {
+  const input = document.getElementById('game-lb-name-input');
+  const msg   = document.getElementById('game-lb-submit-msg');
+  const name  = input.value.trim();
+  const day   = lbGetDay();
+  const alreadyDone = (() => { try { return localStorage.getItem(LB_SUBMITTED_KEY + day); } catch(e) { return null; } })();
+  if (alreadyDone) {
+    document.getElementById('game-lb-submit-wrap').style.display = 'none';
+    lbMyName = alreadyDone;
+    gameLbLoad();
+    return;
+  }
+  const err = lbValidateName(name);
+  if (err) { msg.textContent = err; msg.className = 'error'; return; }
+  if (lbMyScore === 0) { msg.textContent = 'Spiel zuerst die Tages Challenge!'; msg.className = 'error'; return; }
+  this.disabled = true; this.textContent = '…'; msg.textContent = '';
+  try {
+    const res = await fetch(`${SB_URL}/rest/v1/leaderboard?apikey=${SB_KEY}`, {
+      method: 'POST',
+      headers: { ...SB_HEADERS, 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ name, score: lbMyScore, day })
+    });
+    if (res.ok || res.status === 201) {
+      lbMyName = name;
+      try { localStorage.setItem(LB_SUBMITTED_KEY + day, name); } catch(e) {}
+      try { localStorage.setItem('wids_lb_lastname', name); } catch(e) {}
+      document.getElementById('game-lb-submit-wrap').style.display = 'none';
+      gameLbLoad();
+      // Also refresh other leaderboards
+      lbLoad(); apLbLoad();
+      try { gtag('event', 'leaderboard_submit', { score: lbMyScore }); } catch(e) {}
+    } else {
+      msg.textContent = 'Fehler. Bitte nochmals versuchen.';
+      msg.className = 'error';
+      this.disabled = false; this.textContent = 'Eintragen';
+    }
+  } catch(e) {
+    msg.textContent = 'Keine Verbindung.';
+    msg.className = 'error';
+    this.disabled = false; this.textContent = 'Eintragen';
+  }
+});
 async function lbRender(listEl) {
   const day = lbGetDay();
   if (!listEl) return;
