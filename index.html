@@ -183,7 +183,7 @@ nav {
   letter-spacing: 0.6px; color: var(--text3); margin-bottom: 3px;
 }
 #place-name {
-  font-size: 32px; font-weight: 700; letter-spacing: -0.5px;
+  font-size: 36px; font-weight: 800; letter-spacing: -1px;
   color: var(--text); line-height: 1.1;
 }
 #place-meta { font-size: 13px; color: var(--text2); margin-top: 3px; }
@@ -331,45 +331,54 @@ nav {
   #game-lb-mobile { display: none; }
 }
 .lb-title {
-  font-size: 16px; font-weight: 700; margin-bottom: 1rem;
+  font-size: 15px; font-weight: 700; margin-bottom: 0.875rem;
+  display: flex; align-items: center; gap: 6px;
 }
 .lb-hint {
   font-size: 11px; color: var(--text3); margin-top: 4px;
 }
 .lb-submit-row {
-  display: flex; gap: 8px; margin-bottom: 6px; min-width: 0;
+  display: flex; gap: 6px; margin-bottom: 6px; min-width: 0;
 }
-#lb-name-input, #ap-lb-name-input {
+#lb-name-input, #ap-lb-name-input, #game-lb-name-input {
   flex: 1; min-width: 0;
-  height: var(--touch-min);
-  border: 1px solid var(--border2); border-radius: var(--radius);
-  background: var(--bg); color: var(--text);
-  font-size: 15px; font-family: inherit;
-  padding: 0 12px; outline: none;
+  height: 38px;
+  border: 1.5px solid var(--border2); border-radius: 8px;
+  background: var(--bg2); color: var(--text);
+  font-size: 14px; font-family: inherit;
+  padding: 0 10px; outline: none;
   transition: border-color 0.15s;
 }
-#lb-name-input:focus, #ap-lb-name-input:focus { border-color: var(--red); }
-#lb-submit-msg {
-  font-size: 12px; min-height: 18px;
-  color: var(--text2); margin-bottom: 10px;
+#lb-name-input:focus, #ap-lb-name-input:focus, #game-lb-name-input:focus { border-color: var(--red); background: var(--bg); }
+#lb-submit-btn, #ap-lb-submit-btn, #game-lb-submit-btn {
+  height: 38px; padding: 0 14px; font-size: 13px; font-weight: 600;
+  white-space: nowrap; border-radius: 8px;
 }
-#lb-submit-msg.error { color: var(--red); }
-#lb-submit-msg.success { color: #1D9E75; }
-.lb-loading { font-size: 13px; color: var(--text3); padding: 8px 0; }
+#lb-submit-msg, #ap-lb-submit-msg, #game-lb-submit-msg {
+  font-size: 11px; min-height: 16px;
+  color: var(--text2); margin-bottom: 8px;
+}
+#lb-submit-msg.lb-hint, #ap-lb-submit-msg.lb-hint, #game-lb-submit-msg.lb-hint { color: var(--text3); }
+#lb-submit-msg.success, #ap-lb-submit-msg.success { color: #1D9E75; }
+.lb-loading { font-size: 13px; color: var(--text3); padding: 10px 0; text-align: center; }
 .lb-row {
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px 0; border-bottom: 1px solid var(--border);
-  font-size: 14px;
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px; margin: 0 -10px;
+  border-radius: 8px;
+  font-size: 13px;
+  transition: background 0.1s;
 }
-.lb-row:last-child { border-bottom: none; }
-.lb-rank { font-weight: 700; width: 28px; flex-shrink: 0; color: var(--text2); }
-.lb-rank.gold   { color: #F5B800; }
-.lb-rank.silver { color: #A0A0A0; }
-.lb-rank.bronze { color: #C47A3A; }
-.lb-name { flex: 1; font-weight: 500; color: var(--text); }
-.lb-name.lb-me  { color: var(--red); font-weight: 700; }
-.lb-score { font-weight: 700; color: var(--text); flex-shrink: 0; }
-.lb-empty { font-size: 13px; color: var(--text3); padding: 8px 0; }
+.lb-row:hover { background: var(--bg2); }
+.lb-row.top1 { background: rgba(245,184,0,0.08); }
+.lb-row.top2 { background: rgba(160,160,160,0.07); }
+.lb-row.top3 { background: rgba(196,122,58,0.07); }
+.lb-row.lb-me-row { background: rgba(204,0,24,0.05); }
+.lb-rank { font-size: 16px; width: 24px; flex-shrink: 0; text-align: center; }
+.lb-rank-num { font-weight: 700; font-size: 12px; color: var(--text3); width: 24px; flex-shrink: 0; text-align: center; }
+.lb-name { flex: 1; font-weight: 500; color: var(--text); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-you { font-size: 10px; color: var(--red); font-weight: 700; margin-left: 4px; }
+.lb-score { font-weight: 700; color: var(--text); flex-shrink: 0; font-size: 13px; font-variant-numeric: tabular-nums; }
+.lb-empty { font-size: 13px; color: var(--text3); padding: 12px 0; text-align: center; }
 
 /* ── END LEADERBOARD ── */
 #final-screen { display: none; }
@@ -378,21 +387,32 @@ nav {
 .final-header p { font-size: 14px; color: var(--text2); }
 #total-card {
   background: var(--red); border-radius: var(--radius-lg);
-  padding: 1.25rem; text-align: center; margin-bottom: 1.25rem;
+  padding: 1.5rem 1.25rem 1.25rem; text-align: center; margin-bottom: 1.25rem;
+  box-shadow: 0 4px 20px rgba(204,0,24,0.25);
 }
-#total-lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(255,255,255,0.7); margin-bottom: 6px; }
-#total-val { font-size: 46px; font-weight: 700; color: #fff; letter-spacing: -1.5px; line-height: 1; }
-#total-max { font-size: 12px; color: rgba(255,255,255,0.65); margin-top: 4px; }
-#rounds-list { display: flex; flex-direction: column; gap: 0; margin-bottom: 1.25rem; }
+#total-lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: rgba(255,255,255,0.65); margin-bottom: 8px; }
+#total-val { font-size: 52px; font-weight: 800; color: #fff; letter-spacing: -2px; line-height: 1; }
+#total-max { font-size: 12px; color: rgba(255,255,255,0.55); margin-top: 4px; }
+#total-bar-wrap { margin-top: 14px; background: rgba(255,255,255,0.2); border-radius: 99px; height: 6px; overflow: hidden; }
+#total-bar-fill { height: 100%; background: #fff; border-radius: 99px; transition: width 0.8s cubic-bezier(.4,0,.2,1); }
+#rounds-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1.25rem; }
+@media (max-width: 480px) { #rounds-list { grid-template-columns: 1fr; } }
 .rrow {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border);
-  min-height: 48px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  min-height: 52px;
+  gap: 8px;
 }
-.rrow-name { font-size: 14px; font-weight: 600; }
-.rrow-dist { font-size: 12px; color: var(--text2); margin-top: 1px; }
-.rrow-pts { font-size: 14px; font-weight: 700; white-space: nowrap; margin-left: 8px; }
+.rrow-left { flex: 1; min-width: 0; }
+.rrow-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rrow-dist { font-size: 11px; color: var(--text2); margin-top: 2px; }
+.rrow-pts { font-size: 15px; font-weight: 700; white-space: nowrap; flex-shrink: 0; }
+.rrow-pts.good { color: #16a34a; }
+.rrow-pts.mid  { color: #d97706; }
+.rrow-pts.bad  { color: #cc0018; }
 #share-box {
   font-family: 'SF Mono','Fira Code',monospace;
   font-size: 12px; background: var(--bg2); padding: 12px 14px;
@@ -457,7 +477,7 @@ nav {
 
 /* ── MOBILE ── */
 @media (max-width: 480px) {
-  #place-name { font-size: 26px; }
+  #place-name { font-size: 30px; }
   #app { padding: 1rem 0.875rem 5rem; }
   nav { padding: 0 0.875rem; }
   .round-stats { gap: 6px; }
@@ -469,7 +489,7 @@ nav {
   .nav-right { gap: 2px; }
 }
 @media (max-width: 360px) {
-  #place-name { font-size: 22px; }
+  #place-name { font-size: 26px; }
 }
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   #app { padding-bottom: calc(4rem + env(safe-area-inset-bottom)); }
@@ -676,6 +696,7 @@ nav {
           <div id="total-lbl">Gesamtpunkte</div>
           <div id="total-val">—</div>
           <div id="total-max">von 25 000 möglichen Punkten</div>
+          <div id="total-bar-wrap"><div id="total-bar-fill" style="width:0%"></div></div>
         </div>
         <div id="rounds-list"></div>
         <div class="btn-row" style="margin-bottom:0.75rem;">
@@ -3990,6 +4011,10 @@ function showAlreadyPlayed(data) {
   document.getElementById('nav-free-btn').className = 'nav-btn';
   const total = data.scores.reduce((a, b) => a + b, 0);
   document.getElementById('ap-score').textContent = total.toLocaleString('de-CH');
+  requestAnimationFrame(() => {
+    const bar = document.getElementById('ap-bar-fill');
+    if (bar) bar.style.width = Math.min(100, (total / 25000) * 100).toFixed(1) + '%';
+  });
   const apSw = document.getElementById('ap-streak-wrap');
   const apSt = loadStats();
   if (apSw) apSw.innerHTML = apSt.dailyStreak > 1 ? `<div class="streak-badge">🔥 ${apSt.dailyStreak} Tage in Folge</div>` : '';
@@ -4088,6 +4113,10 @@ function showFinal() {
   // Show streak for daily
 
   document.getElementById('total-val').textContent = total.toLocaleString('de-CH');
+  requestAnimationFrame(() => {
+    const bar = document.getElementById('total-bar-fill');
+    if (bar) bar.style.width = Math.min(100, (total / 25000) * 100).toFixed(1) + '%';
+  });
 
   const list = document.getElementById('rounds-list');
   list.innerHTML = '';
@@ -4095,11 +4124,11 @@ function showFinal() {
     const row = document.createElement('div');
     row.className = 'rrow';
     row.innerHTML = `
-      <div>
+      <div class="rrow-left">
         <div class="rrow-name">${p.n}</div>
         <div class="rrow-dist">${dists[i] < 1 ? '< 1 km daneben' : Math.round(dists[i]) + ' km daneben'}</div>
       </div>
-      <div class="rrow-pts" style="color:${scColor(scores[i])}">${scores[i].toLocaleString('de-CH')} Pkt.</div>`;
+      <div class="rrow-pts ${dotCls(scores[i])}">${scores[i].toLocaleString('de-CH')}</div>`;
     list.appendChild(row);
   });
 
@@ -4529,10 +4558,15 @@ async function gameLbRender() {
     const html = rows.length === 0
       ? '<div class="lb-empty">Noch keine Einträge heute.</div>'
       : rows.map((r, i) => {
-          const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `<span style="color:var(--text3);font-size:12px;">${i+1}.</span>`;
+          const medals = ['🥇','🥈','🥉'];
+          const rankHtml = i < 3
+            ? `<span class="lb-rank">${medals[i]}</span>`
+            : `<span class="lb-rank-num">${i+1}</span>`;
+          const topCls = i === 0 ? ' top1' : i === 1 ? ' top2' : i === 2 ? ' top3' : '';
           const isMe = r.name === lbMyName && lbMyName !== '';
-          return `<div class="lb-row${isMe ? ' lb-me' : ''}">
-            <span class="lb-rank">${medal}</span>
+          const meCls = isMe ? ' lb-me-row' : '';
+          return `<div class="lb-row${topCls}${meCls}">
+            ${rankHtml}
             <span class="lb-name">${escHtml(r.name)}${isMe ? ' <span class="lb-you">← du</span>' : ''}</span>
             <span class="lb-score">${r.score.toLocaleString('de-CH')}</span>
           </div>`;
@@ -4607,12 +4641,16 @@ async function lbRender(listEl) {
     }
     const medals = ['🥇','🥈','🥉'];
     const rankClass = ['gold','silver','bronze'];
+    const topCls = ['top1','top2','top3'];
     listEl.innerHTML = rows.map((r, i) => {
-      const isMe = lbMyName && r.name === lbMyName && r.score === lbMyScore;
-      return `<div class="lb-row">
-        <div class="lb-rank ${rankClass[i] || ''}">${medals[i] || (i+1) + '.'}</div>
-        <div class="lb-name ${isMe ? 'lb-me' : ''}">${escHtml(r.name)}${isMe ? ' ← du' : ''}</div>
-        <div class="lb-score">${r.score.toLocaleString('de-CH')}</div>
+      const isMe = lbMyName && r.name === lbMyName;
+      const rankHtml = i < 3
+        ? `<span class="lb-rank">${medals[i]}</span>`
+        : `<span class="lb-rank-num">${i+1}</span>`;
+      return `<div class="lb-row ${topCls[i] || ''}${isMe ? ' lb-me-row' : ''}">
+        ${rankHtml}
+        <span class="lb-name">${escHtml(r.name)}${isMe ? ' <span class="lb-you">← du</span>' : ''}</span>
+        <span class="lb-score">${r.score.toLocaleString('de-CH')}</span>
       </div>`;
     }).join('');
   } catch(e) {
