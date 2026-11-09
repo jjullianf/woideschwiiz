@@ -533,6 +533,8 @@ nav {
   }
   #game-lb-mobile { display: none; }
 }
+
+#rr-canton { font-size: 13px; color: var(--text2); margin: -6px 0 10px; }
 </style>
 </head>
 <body>
@@ -649,6 +651,7 @@ nav {
 
     <div id="round-result">
       <div id="rr-title"></div>
+      <div id="rr-canton"></div>
       <div class="score-bar-bg"><div class="score-bar-fill" id="sb-fill"></div></div>
       <div class="round-stats">
         <div class="rstat"><div class="rstat-val" id="sv-score">—</div><div class="rstat-lbl">Punkte</div></div>
@@ -3926,6 +3929,7 @@ const SB_URL = 'https://thxgpofgpeqtmhucouqq.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRoeGdwb2ZncGVxdG1odWNvdXFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwODMxNzcsImV4cCI6MjA5MTY1OTE3N30.oUCwQeLTi1MjOzpH_wRIR6W9v_ghElAGnDzBPuc4Qls';
 const SB_HEADERS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' };
 let showCantons = false, showCities = false, showKt = false, showLakes = false, currentKt = '';
+const KT_NAMES = {ZH:'Zürich',BE:'Bern',LU:'Luzern',UR:'Uri',SZ:'Schwyz',OW:'Obwalden',NW:'Nidwalden',GL:'Glarus',ZG:'Zug',FR:'Freiburg',SO:'Solothurn',BS:'Basel-Stadt',BL:'Basel-Landschaft',SH:'Schaffhausen',AR:'Appenzell Ausserrhoden',AI:'Appenzell Innerrhoden',SG:'St. Gallen',GR:'Graubünden',AG:'Aargau',TG:'Thurgau',TI:'Tessin',VD:'Waadt',VS:'Wallis',NE:'Neuenburg',GE:'Genf',JU:'Jura'};
 
 function shuffle(a) {
   const b = a.slice();
@@ -4002,6 +4006,7 @@ function startGame(m) {
   updateHelperBtns();
   renderHelpers();
   startRound();
+  gameLbLoad();
 }
 
 function showAlreadyPlayed(data) {
@@ -4156,9 +4161,9 @@ document.getElementById('daily-date').textContent = new Date().toLocaleDateStrin
     requestAnimationFrame(() => startGame('unlimited'));
     return;
   }
-  const saved = localStorage.getItem(DAILY_KEY);
-  if (saved) { showAlreadyPlayed(JSON.parse(saved)); }
-  else { showDailyReady(); }
+  // Land directly in the daily game (startGame shows the already-played screen if needed).
+  // Deferred one frame so all later declarations (mapState etc.) are initialised.
+  requestAnimationFrame(() => startGame('daily'));
 })();
 
 function showDailyReady() {
@@ -4199,9 +4204,7 @@ document.getElementById('start-overlay-btn').addEventListener('click', function(
 // Nav buttons
 document.getElementById('nav-daily-btn').addEventListener('click', () => {
   hide('game-screen'); hide('final-screen'); hide('already-played');
-  const saved = localStorage.getItem(DAILY_KEY);
-  if (saved) { showAlreadyPlayed(JSON.parse(saved)); }
-  else { showDailyReady(); }
+  startGame('daily');
 });
 
 // ── MAP CLICK + TOUCH ─────────────────────────────────────────
@@ -4414,6 +4417,7 @@ function handleMapInteraction(e) {
 
   const t = sc >= 4500 ? 'Perfekt!' : sc >= 3500 ? 'Sehr gut!' : sc >= 2000 ? 'Nicht schlecht!' : 'Weit daneben...';
   document.getElementById('rr-title').textContent = t;
+  document.getElementById('rr-canton').textContent = p.n + ' liegt im Kanton ' + (KT_NAMES[p.kt] || p.kt) + ' (' + p.kt + ')';
   document.getElementById('sv-score').textContent = sc.toLocaleString('de-CH');
   document.getElementById('sv-score').style.color = scColor(sc);
   document.getElementById('sv-dist').textContent  = km < 1 ? '< 1' : Math.round(km);
@@ -4550,7 +4554,7 @@ async function gameLbRender() {
   if (!sidebar && !mobile) return;
   try {
     const res = await fetch(
-      `${SB_URL}/rest/v1/leaderboard?day=eq.${day}&order=score.desc&limit=10&apikey=${SB_KEY}`,
+      `${SB_URL}/rest/v1/leaderboard?day=eq.${day}&order=score.desc&limit=20&apikey=${SB_KEY}`,
       { headers: SB_HEADERS }
     );
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -4631,7 +4635,7 @@ async function lbRender(listEl) {
   if (!listEl) return;
   try {
     const res = await fetch(
-      `${SB_URL}/rest/v1/leaderboard?day=eq.${day}&order=score.desc&limit=10&apikey=${SB_KEY}`,
+      `${SB_URL}/rest/v1/leaderboard?day=eq.${day}&order=score.desc&limit=20&apikey=${SB_KEY}`,
       { headers: SB_HEADERS }
     );
     const rows = await res.json();

@@ -463,6 +463,8 @@ nav {
 #app {
   padding: 1.25rem 0 5rem;
 }
+
+#rr-canton { font-size: 13px; color: var(--text2); margin: -6px 0 10px; }
 </style>
 </head>
 <body>
@@ -532,6 +534,7 @@ nav {
 
     <div id="round-result">
       <div id="rr-title"></div>
+      <div id="rr-canton"></div>
       <div class="score-bar-bg"><div class="score-bar-fill" id="sb-fill"></div></div>
       <div class="round-stats">
         <div class="rstat"><div class="rstat-val" id="sv-score">—</div><div class="rstat-lbl">Punkte</div></div>
@@ -3766,6 +3769,7 @@ function updateStatsDisplay() {
 
 let mode = '', roundIdx = 0, places = [], scores = [], dists = [], guessed = false;
 let showCantons = false, showCities = false, showKt = false, showLakes = false, currentKt = '';
+const KT_NAMES = {ZH:'Zürich',BE:'Bern',LU:'Luzern',UR:'Uri',SZ:'Schwyz',OW:'Obwalden',NW:'Nidwalden',GL:'Glarus',ZG:'Zug',FR:'Freiburg',SO:'Solothurn',BS:'Basel-Stadt',BL:'Basel-Landschaft',SH:'Schaffhausen',AR:'Appenzell Ausserrhoden',AI:'Appenzell Innerrhoden',SG:'St. Gallen',GR:'Graubünden',AG:'Aargau',TG:'Thurgau',TI:'Tessin',VD:'Waadt',VS:'Wallis',NE:'Neuenburg',GE:'Genf',JU:'Jura'};
 
 function shuffle(a) {
   const b = a.slice();
@@ -4165,6 +4169,7 @@ function handleMapInteraction(e) {
 
   const t = sc >= 4500 ? 'Perfekt!' : sc >= 3500 ? 'Sehr gut!' : sc >= 2000 ? 'Nicht schlecht!' : 'Weit daneben...';
   document.getElementById('rr-title').textContent = t;
+  document.getElementById('rr-canton').textContent = p.n + ' liegt im Kanton ' + (KT_NAMES[p.kt] || p.kt) + ' (' + p.kt + ')';
   document.getElementById('sv-score').textContent = sc.toLocaleString('de-CH');
   document.getElementById('sv-score').style.color = scColor(sc);
   document.getElementById('sv-dist').textContent  = km < 1 ? '< 1' : Math.round(km);
