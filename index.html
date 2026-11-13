@@ -4219,8 +4219,8 @@ function applyMapTransform() {
 
 function clampMapTransform(wrap, svg) {
   const ww = wrap.clientWidth, wh = wrap.clientHeight;
-  const sw = svg.clientWidth * mapState.scale;
-  const sh = svg.clientHeight * mapState.scale;
+  const sw = (svg.clientWidth  || wrap.clientWidth)  * mapState.scale;
+  const sh = (svg.clientHeight || wrap.clientHeight) * mapState.scale;
   // Don't allow panning beyond edges
   mapState.tx = Math.min(0, Math.max(mapState.tx, ww - sw));
   mapState.ty = Math.min(0, Math.max(mapState.ty, wh - sh));
@@ -4253,77 +4253,104 @@ document.getElementById('map-wrap').addEventListener('wheel', function(e) {
 // ── TOUCH STATE ──────────────────────────────────────────────
 let lastTouches = null, lastPinchDist = null, isPinching = false, panStart = null;
 let lastPinchEnd = 0;
+let lastPinchMid = null;
 let touchMoved = false;     // did the single finger move significantly?
 let touchStartPos = null;   // where the touch started
 
-document.getElementById('map-wrap').addEventListener('touchstart', function(e) {
-  if (e.touches.length === 2) {
+// Only count fingers that are on the map. A thumb or palm resting elsewhere on the screen is
+// part of e.touches too; it used to be treated as the 2nd pinch finger and threw the map into a corner.
+function mapTouches(e) {
+  const wrap = document.getElementById('map-wrap');
+  return Array.from(e.touches).filter(t => wrap.contains(t.target));
+}
+function pinchInfo(ts) {
+  const dx = ts[0].clientX - ts[1].clientX, dy = ts[0].clientY - ts[1].clientY;
+  return { dist: Math.hypot(dx, dy), mx: (ts[0].clientX + ts[1].clientX) / 2, my: (ts[0].clientY + ts[1].clientY) / 2 };
+}
+// (Re)start a one-finger pan from the finger's current position, so changing the number
+// of fingers never makes the map jump.
+function startPan(t) {
+  panStart = mapState.scale > 1 ? { x: t.clientX - mapState.tx, y: t.clientY - mapState.ty } : null;
+}
+
+const touchWrap = document.getElementById('map-wrap');
+
+touchWrap.addEventListener('touchstart', function(e) {
+  const ts = mapTouches(e);
+  if (ts.length >= 2) {
+    const p = pinchInfo(ts);
     isPinching = true;
     touchMoved = true; // pinch always counts as moved
-    lastPinchDist = Math.hypot(
-      e.touches[0].clientX - e.touches[1].clientX,
-      e.touches[0].clientY - e.touches[1].clientY
-    );
-    lastTouches = [
-      { x: e.touches[0].clientX, y: e.touches[0].clientY },
-      { x: e.touches[1].clientX, y: e.touches[1].clientY }
-    ];
+    panStart = null;   // drop any stale one-finger pan from before the 2nd finger landed
+    lastPinchDist = p.dist;
+    lastPinchMid = { x: p.mx, y: p.my };
     e.preventDefault();
-  } else if (e.touches.length === 1) {
+  } else if (ts.length === 1) {
     touchMoved = false;
-    touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    if (mapState.scale > 1) {
-      panStart = { x: e.touches[0].clientX - mapState.tx, y: e.touches[0].clientY - mapState.ty };
-      e.preventDefault();
-    }
+    touchStartPos = { x: ts[0].clientX, y: ts[0].clientY };
+    startPan(ts[0]);
+    if (panStart) e.preventDefault();
   }
 }, { passive: false });
 
-document.getElementById('map-wrap').addEventListener('touchmove', function(e) {
-  if (e.touches.length === 2 && isPinching) {
+touchWrap.addEventListener('touchmove', function(e) {
+  const ts = mapTouches(e);
+  if (ts.length >= 2 && isPinching) {
     e.preventDefault();
-    const dist = Math.hypot(
-      e.touches[0].clientX - e.touches[1].clientX,
-      e.touches[0].clientY - e.touches[1].clientY
-    );
-    const rect = this.getBoundingClientRect();
-    const cx = ((e.touches[0].clientX + e.touches[1].clientX) / 2) - rect.left;
-    const cy = ((e.touches[0].clientY + e.touches[1].clientY) / 2) - rect.top;
-    zoomAt(cx, cy, mapState.scale * (dist / lastPinchDist));
-    lastPinchDist = dist;
-    applyMapTransform();
-  } else if (e.touches.length === 1) {
+    const p = pinchInfo(ts);
+    if (lastPinchDist > 1 && p.dist > 1) {
+      const rect = this.getBoundingClientRect();
+      // two-finger pan: follow the midpoint, then zoom around it
+      if (lastPinchMid) {
+        mapState.tx += p.mx - lastPinchMid.x;
+        mapState.ty += p.my - lastPinchMid.y;
+      }
+      const ratio = Math.max(0.5, Math.min(2, p.dist / lastPinchDist));
+      zoomAt(p.mx - rect.left, p.my - rect.top, mapState.scale * ratio);
+    }
+    lastPinchDist = p.dist;
+    lastPinchMid = { x: p.mx, y: p.my };
+  } else if (ts.length === 1 && !isPinching) {
     // Track if finger moved more than 8px (= pan, not tap)
     if (touchStartPos) {
-      const dx = e.touches[0].clientX - touchStartPos.x;
-      const dy = e.touches[0].clientY - touchStartPos.y;
+      const dx = ts[0].clientX - touchStartPos.x;
+      const dy = ts[0].clientY - touchStartPos.y;
       if (Math.hypot(dx, dy) > 8) touchMoved = true;
     }
     if (panStart && mapState.scale > 1) {
       e.preventDefault();
       const wrap = document.getElementById('map-wrap');
       const svg  = document.getElementById('map-svg');
-      mapState.tx = e.touches[0].clientX - panStart.x;
-      mapState.ty = e.touches[0].clientY - panStart.y;
+      mapState.tx = ts[0].clientX - panStart.x;
+      mapState.ty = ts[0].clientY - panStart.y;
       clampMapTransform(wrap, svg);
       applyMapTransform();
     }
   }
 }, { passive: false });
 
-document.getElementById('map-wrap').addEventListener('touchend', function(e) {
-  if (e.touches.length < 2) {
+function onMapTouchEnd(e) {
+  const ts = mapTouches(e);
+  if (ts.length < 2) {
     if (isPinching) {
       isPinching = false;
       lastPinchEnd = Date.now();
     }
     lastPinchDist = null;
+    lastPinchMid = null;
   }
-  if (e.touches.length === 0) {
+  if (ts.length === 1) {
+    // One finger left (e.g. after a pinch): keep panning from where it is, no jump, never a tap
+    touchMoved = true;
+    touchStartPos = { x: ts[0].clientX, y: ts[0].clientY };
+    startPan(ts[0]);
+  } else if (ts.length === 0) {
     panStart = null;
     touchStartPos = null;
   }
-});
+}
+touchWrap.addEventListener('touchend', onMapTouchEnd);
+touchWrap.addEventListener('touchcancel', onMapTouchEnd);
 
 // Desktop: click-drag pan when zoomed
 let dragStart = null, dragged = false;
