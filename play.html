@@ -565,6 +565,7 @@ nav {
         </div>
         <div id="share-box"></div>
         <div class="btn-row" style="margin-top:0.75rem;">
+          <button class="btn" id="btn-copy">Kopieren</button>
           <button class="btn" id="btn-share">Teilen ↗</button>
           <button class="btn btn-whatsapp" id="btn-whatsapp">WhatsApp ↗</button>
         </div>
@@ -3941,8 +3942,9 @@ function showFinal() {
     const e = s >= 4500 ? '🟩🟩🟩' : s >= 3000 ? '🟩🟩⬜' : s >= 1500 ? '🟩⬜⬜' : '⬜⬜⬜';
     return `${p.n}: ${dists[i] < 1 ? '<1' : Math.round(dists[i])} km ${e}`;
   });
+  const fmtTotal = String(total).replace(/\B(?=(\d{3})+(?!\d))/g, "'");
   document.getElementById('share-box').textContent =
-    `Spill au «Wo i de Schwiiz»! 🇨🇭\n${mode === 'daily' ? 'Tages Challenge' : 'Unlimitiert'} · ${new Date().toLocaleDateString('de-CH')}\n${total.toLocaleString('de-CH')} / 25 000\n\n${lines.join('\n')}\n\nwoideschwiiz.ch`;
+    `Spill au Wo i de Schwiiz! 🇨🇭\n${mode === 'daily' ? 'Tages Challenge' : 'Unlimitiert'} · ${fmtTotal} / 25 000\nwoideschwiiz.ch`;
 
   // Show leaderboard for daily mode
   lbShowSection(total);
@@ -4221,6 +4223,14 @@ document.getElementById('map-svg').addEventListener('touchend', function(e) {
   if (Date.now() - lastPinchEnd < 400) return;  // cooldown after pinch
   handleMapInteraction(e);
 }, { passive: false });
+document.getElementById('btn-copy').addEventListener('click', function() {
+  const btn = this;
+  try { gtag('event', 'share', { method: 'copy_button', mode: 'unlimited' }); } catch(e) {}
+  copyToClipboard(document.getElementById('share-box').textContent, function() {
+    btn.textContent = 'Kopiert ✓';
+    setTimeout(() => btn.textContent = 'Kopieren', 2000);
+  });
+});
 document.getElementById('btn-share').addEventListener('click', function() {
   const text = document.getElementById('share-box').textContent;
   const btn = this;
